@@ -6,6 +6,10 @@ import {
   signOut,
   onAuthStateChanged,
   User as FirebaseUser,
+  GoogleAuthProvider,
+  signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
 } from "firebase/auth";
 import {
   getFirestore,
@@ -49,6 +53,11 @@ try {
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 
+// Google Auth Provider
+const googleProvider = new GoogleAuthProvider();
+googleProvider.addScope('email');
+googleProvider.addScope('profile');
+
 // Auth functions
 export const signIn = (email: string, password: string) =>
   signInWithEmailAndPassword(auth, email, password);
@@ -62,6 +71,31 @@ export const logOut = async () => {
     return true;
   } catch (error) {
     console.error("Logout error:", error);
+    throw error;
+  }
+};
+
+// Google Sign-In functions
+export const signInWithGoogle = async () => {
+  try {
+    const result = await signInWithPopup(auth, googleProvider);
+    return result;
+  } catch (error: any) {
+    console.error("Google sign-in error:", error);
+    throw error;
+  }
+};
+
+export const signInWithGoogleRedirect = () => {
+  return signInWithRedirect(auth, googleProvider);
+};
+
+export const handleGoogleRedirectResult = async () => {
+  try {
+    const result = await getRedirectResult(auth);
+    return result;
+  } catch (error: any) {
+    console.error("Google redirect result error:", error);
     throw error;
   }
 };

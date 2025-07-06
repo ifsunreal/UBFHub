@@ -9,7 +9,7 @@ import { useLocation } from "wouter";
 import { useStore } from "@/lib/store";
 import { useToast } from "@/hooks/use-toast";
 import { User, Mail, Lock, GraduationCap, Eye, EyeOff } from "lucide-react";
-import { signIn, signUp, createDocument, getDocument, onAuthStateChange } from "@/lib/firebase";
+import { signIn, signUp, createDocument, getDocument, onAuthStateChange, signInWithGoogle } from "@/lib/firebase";
 
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -98,7 +98,7 @@ export default function Login() {
       
       const userDoc = await getDocument("users", firebaseUser.uid);
       if (userDoc.exists()) {
-        const userData = { id: firebaseUser.uid, ...userDoc.data() };
+        const userData = { id: firebaseUser.uid, ...userDoc.data() } as any;
         dispatch({ type: "SET_USER", payload: userData });
         
         toast({
@@ -217,11 +217,74 @@ export default function Login() {
     }
   };
 
-  const handleGoogleSignIn = () => {
-    toast({
-      title: "Coming Soon",
-      description: "Google sign-in will be available soon!",
-    });
+  const handleGoogleSignIn = async () => {
+    setIsLoading(true);
+    
+    try {
+      const result = await signInWithGoogle();
+      const firebaseUser = result.user;
+      
+      // Check if user exists in Firestore
+      const userDoc = await getDocument("users", firebaseUser.uid);
+      
+      if (userDoc.exists()) {
+        // Existing user - login
+        const userData = { id: firebaseUser.uid, ...userDoc.data() } as any;
+        dispatch({ type: "SET_USER", payload: userData });
+        
+        toast({
+          title: "Welcome back!",
+          description: `Hello ${userData.fullName || firebaseUser.displayName}!`,
+        });
+        
+        const role = userData.role;
+        if (role === 'admin') {
+          setLocation("/admin");
+        } else if (role === 'stall_owner') {
+          setLocation("/stall-dashboard");
+        } else {
+          setLocation("/");
+        }
+      } else {
+        // New user - create account with default student role
+        const userData = {
+          email: firebaseUser.email || "",
+          fullName: firebaseUser.displayName || "",
+          studentId: "", // Can be updated later in profile
+          role: "student",
+        };
+        
+        await createDocument("users", firebaseUser.uid, userData);
+        
+        dispatch({ type: "SET_USER", payload: { id: firebaseUser.uid, ...userData } });
+        
+        toast({
+          title: "Account created!",
+          description: `Welcome to UB FoodHub, ${userData.fullName}!`,
+        });
+        
+        setLocation("/");
+      }
+    } catch (error: any) {
+      console.error("Google sign-in error:", error);
+      let errorMessage = "Please try again.";
+      
+      if (error.code === 'auth/popup-closed-by-user') {
+        errorMessage = "Sign-in was cancelled.";
+      } else if (error.code === 'auth/popup-blocked') {
+        errorMessage = "Popup was blocked. Please allow popups and try again.";
+      } else if (error.code === 'auth/cancelled-popup-request') {
+        errorMessage = "Only one sign-in request at a time.";
+      }
+      
+      toast({
+        title: "Sign-in failed",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   if (authMode === "social") {
