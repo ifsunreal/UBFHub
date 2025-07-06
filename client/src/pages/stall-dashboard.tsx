@@ -451,31 +451,113 @@ export default function StallDashboard() {
               </Card>
             </div>
 
-            {/* Recent Orders */}
+            {/* Detailed Orders */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-[#6d031e]">Recent Orders</CardTitle>
+                <CardTitle className="text-[#6d031e]">Order Details</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
-                  {orders.slice(0, 5).map((order) => (
-                    <div key={order.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <div>
-                        <p className="font-medium text-gray-900">Order {order.qrCode}</p>
-                        <p className="text-sm text-gray-600">₱{order.totalAmount?.toFixed(2)}</p>
+                <div className="space-y-4">
+                  {orders.slice(0, 10).map((order) => (
+                    <div key={order.id} className="border rounded-lg p-4 bg-white">
+                      {/* Order Header */}
+                      <div className="flex items-center justify-between mb-3">
+                        <div>
+                          <h3 className="font-semibold text-gray-900">Order {order.qrCode}</h3>
+                          <p className="text-sm text-gray-600">
+                            {order.createdAt?.toDate ? new Date(order.createdAt.toDate()).toLocaleString() : 'Just now'}
+                          </p>
+                        </div>
+                        <Badge
+                          className={
+                            order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                            order.status === 'preparing' ? 'bg-blue-100 text-blue-800' :
+                            order.status === 'ready' ? 'bg-green-100 text-green-800' :
+                            'bg-gray-100 text-gray-800'
+                          }
+                        >
+                          {order.status?.toUpperCase()}
+                        </Badge>
                       </div>
-                      <Badge
-                        className={
-                          order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                          order.status === 'preparing' ? 'bg-blue-100 text-blue-800' :
-                          order.status === 'ready' ? 'bg-green-100 text-green-800' :
-                          'bg-gray-100 text-gray-800'
-                        }
-                      >
-                        {order.status}
-                      </Badge>
+
+                      {/* Order Items */}
+                      <div className="mb-3">
+                        <h4 className="text-sm font-medium text-gray-700 mb-2">Items Ordered:</h4>
+                        <div className="space-y-2">
+                          {order.items?.map((item, index) => (
+                            <div key={index} className="flex justify-between items-start">
+                              <div className="flex-1">
+                                <p className="font-medium">{item.name} x{item.quantity}</p>
+                                {item.customizations && item.customizations.length > 0 && (
+                                  <p className="text-sm text-gray-600 ml-2">
+                                    Add-ons: {item.customizations.map(c => c.name).join(', ')}
+                                  </p>
+                                )}
+                              </div>
+                              <span className="text-sm font-medium">₱{((item.price + (item.customizations?.reduce((sum, c) => sum + c.price, 0) || 0)) * item.quantity).toFixed(2)}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Special Instructions */}
+                      {order.specialInstructions && (
+                        <div className="mb-3">
+                          <h4 className="text-sm font-medium text-gray-700">Special Instructions:</h4>
+                          <p className="text-sm text-gray-600 bg-gray-50 p-2 rounded mt-1">{order.specialInstructions}</p>
+                        </div>
+                      )}
+
+                      {/* Cutlery Info */}
+                      <div className="mb-3">
+                        <h4 className="text-sm font-medium text-gray-700">Cutlery:</h4>
+                        <p className="text-sm text-gray-600">Customer {order.noCutlery ? 'does not need' : 'needs'} cutlery</p>
+                      </div>
+
+                      {/* Order Total */}
+                      <div className="border-t pt-3 flex justify-between items-center">
+                        <span className="font-semibold text-gray-900">Total Amount:</span>
+                        <span className="font-bold text-lg text-[#6d031e]">₱{order.totalAmount?.toFixed(2)}</span>
+                      </div>
+
+                      {/* Order Actions */}
+                      <div className="flex gap-2 mt-3">
+                        {order.status === 'pending' && (
+                          <Button
+                            size="sm"
+                            onClick={() => updateOrderStatus(order.id, 'preparing')}
+                            className="bg-blue-600 hover:bg-blue-700 text-white"
+                          >
+                            Accept Order
+                          </Button>
+                        )}
+                        {order.status === 'preparing' && (
+                          <Button
+                            size="sm"
+                            onClick={() => updateOrderStatus(order.id, 'ready')}
+                            className="bg-green-600 hover:bg-green-700 text-white"
+                          >
+                            Mark Ready
+                          </Button>
+                        )}
+                        {order.status === 'ready' && (
+                          <Button
+                            size="sm"
+                            onClick={() => updateOrderStatus(order.id, 'completed')}
+                            className="bg-gray-600 hover:bg-gray-700 text-white"
+                          >
+                            Complete Order
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   ))}
+                  {orders.length === 0 && (
+                    <div className="text-center py-8 text-gray-500">
+                      <Package className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                      <p>No orders yet</p>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>

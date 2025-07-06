@@ -68,8 +68,7 @@ export default function Cart() {
     const customizationPrice = item.customizations?.reduce((sum, custom) => sum + (custom.price || 0), 0) || 0;
     return sum + ((itemPrice + customizationPrice) * item.quantity);
   }, 0);
-  const deliveryFee = 59.00; // Standard delivery fee
-  const total = subtotal + deliveryFee;
+  const total = subtotal;
 
   const proceedToCheckout = async () => {
     if (cartItems.length === 0) return;
@@ -84,7 +83,6 @@ export default function Cart() {
         stallId: cartItems[0]?.stallId, // Assuming single stall for now
         status: "pending",
         totalAmount: total,
-        deliveryFee: deliveryFee,
         specialInstructions: deliveryInstructions || null,
         qrCode: orderId,
         estimatedTime: "25-40 mins",
@@ -192,11 +190,19 @@ export default function Cart() {
             <div className="flex-1">
               <h3 className="font-medium">Pickup</h3>
               <p className="text-sm text-gray-600">Ready in 15-25 mins</p>
-              <Button variant="link" className="p-0 h-auto text-sm text-[#6d031e]">Change</Button>
-            </div>
-            <div className="flex items-center gap-2 text-sm text-gray-400">
-              <Lock className="w-4 h-4" />
-              <span>Delivery unavailable</span>
+              <Button 
+                variant="link" 
+                className="p-0 h-auto text-sm text-[#6d031e]"
+                onClick={() => {
+                  toast({
+                    title: "Delivery Option",
+                    description: "Delivery is currently unavailable. Only pickup is supported.",
+                    variant: "default",
+                  });
+                }}
+              >
+                Change
+              </Button>
             </div>
           </div>
         </motion.div>
@@ -302,10 +308,6 @@ export default function Cart() {
             <span>Subtotal</span>
             <span>₱{subtotal.toFixed(2)}</span>
           </div>
-          <div className="flex justify-between">
-            <span>Service fee</span>
-            <span>₱{deliveryFee.toFixed(2)}</span>
-          </div>
           
           {/* Apply Voucher - Locked */}
           <Button variant="outline" className="w-full justify-start text-gray-400 cursor-not-allowed" disabled>
@@ -327,8 +329,8 @@ export default function Cart() {
 
           <div className="border-t pt-3">
             <div className="flex justify-between font-semibold text-lg">
-              <span>Total (incl. fees and tax)</span>
-              <span>₱{total.toFixed(2)}</span>
+              <span>Total</span>
+              <span>₱{subtotal.toFixed(2)}</span>
             </div>
             <Button variant="link" className="p-0 h-auto text-sm text-gray-600">See summary</Button>
           </div>
