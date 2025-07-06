@@ -157,6 +157,7 @@ export default function Orders() {
                 <div className="flex items-center justify-between mb-3">
                   <div>
                     <h3 className="font-semibold text-gray-900">Order {order.qrCode}</h3>
+                    <p className="text-sm text-[#6d031e] font-medium">{order.stallName || "Unknown Stall"}</p>
                     <p className="text-sm text-gray-600">
                       {order.createdAt ? 
                         new Date(order.createdAt.seconds * 1000).toLocaleDateString('en-US', {
@@ -175,47 +176,106 @@ export default function Orders() {
                   </Badge>
                 </div>
 
-                {/* Status Timeline */}
+                {/* Order Items */}
                 <div className="mb-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className={`w-3 h-3 rounded-full ${order.status === 'cancelled' ? 'bg-red-500' : 'bg-green-500'}`}></div>
-                    <span className="font-medium text-sm">{statusConfig.description}</span>
+                  <h4 className="font-medium text-gray-900 mb-2">Items Ordered:</h4>
+                  <div className="space-y-2">
+                    {order.items && order.items.map((item: any, itemIndex: number) => (
+                      <div key={itemIndex} className="flex justify-between items-start bg-gray-50 rounded-lg p-3">
+                        <div className="flex-1">
+                          <p className="font-medium text-sm">{item.name} x{item.quantity}</p>
+                          {item.customizations && item.customizations.length > 0 && (
+                            <p className="text-xs text-gray-600">
+                              Add-ons: {item.customizations.map((c: any) => c.name).join(", ")}
+                            </p>
+                          )}
+                        </div>
+                        <span className="font-semibold text-sm">
+                          ₱{(((item.price || 0) + (item.customizations?.reduce((sum: number, custom: any) => sum + (custom.price || 0), 0) || 0)) * item.quantity).toFixed(2)}
+                        </span>
+                      </div>
+                    ))}
                   </div>
                   
-                  {order.status === 'ready' && (
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      className="bg-green-50 border border-green-200 rounded-lg p-3 mt-2"
-                    >
-                      <div className="flex items-center gap-2 text-green-800">
-                        <CheckCircle className="w-4 h-4" />
-                        <span className="font-medium text-sm">Ready for pickup!</span>
+                  {/* Payment Info */}
+                  <div className="mt-3 pt-3 border-t border-gray-200">
+                    <div className="flex justify-between items-center">
+                      <span className="font-semibold">Total: ₱{order.totalAmount?.toFixed(2)}</span>
+                      <div className="text-right">
+                        <p className="text-sm text-gray-600">Payment: {order.paymentMethod === 'cash' ? 'Cash' : order.paymentMethod}</p>
+                        {order.paymentMethod === 'cash' && order.cashAmount && (
+                          <div className="text-xs text-gray-600">
+                            <p>Cash: ₱{order.cashAmount.toFixed(2)}</p>
+                            <p>Change: ₱{order.changeRequired?.toFixed(2) || '0.00'}</p>
+                          </div>
+                        )}
                       </div>
-                      <p className="text-xs text-green-700 mt-1">Show QR code to the stall owner for pickup</p>
-                    </motion.div>
-                  )}
-
-                  {order.status === 'pending' && (
-                    <div className="text-xs text-gray-600">
-                      Estimated time: {order.estimatedTime || "25-40 mins"}
+                    </div>
+                  </div>
+                  
+                  {order.specialInstructions && (
+                    <div className="mt-2 p-2 bg-blue-50 rounded-lg">
+                      <p className="text-xs text-blue-700">
+                        <strong>Special Instructions:</strong> {order.specialInstructions}
+                      </p>
                     </div>
                   )}
                 </div>
 
-                {/* Order Items */}
-                <div className="border-t pt-3 mb-4">
-                  <div className="space-y-1">
-                    {order.items?.map((item: any, idx: number) => (
-                      <div key={idx} className="flex justify-between text-sm">
-                        <span>{item.quantity}x {item.name || `Item ${idx + 1}`}</span>
-                        <span>₱{(item.price * item.quantity).toFixed(2)}</span>
+                {/* Real-time Status Timeline */}
+                <div className="mb-4">
+                  <h4 className="font-medium text-gray-900 mb-3">Order Status</h4>
+                  <div className="space-y-3">
+                    {/* Progress Timeline */}
+                    <div className="flex items-center gap-3">
+                      <div className={`w-3 h-3 rounded-full ${['pending', 'preparing', 'ready', 'completed'].includes(order.status) ? 'bg-green-500' : 'bg-gray-300'}`}></div>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium">Order Confirmed</p>
+                        <p className="text-xs text-gray-600">We've received your order</p>
                       </div>
-                    ))}
+                    </div>
+                    
+                    <div className="flex items-center gap-3">
+                      <div className={`w-3 h-3 rounded-full ${['preparing', 'ready', 'completed'].includes(order.status) ? 'bg-green-500' : 'bg-gray-300'}`}></div>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium">Preparing</p>
+                        <p className="text-xs text-gray-600">Stall owner is preparing your food</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-3">
+                      <div className={`w-3 h-3 rounded-full ${['ready', 'completed'].includes(order.status) ? 'bg-green-500' : 'bg-gray-300'}`}></div>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium">Ready for Pickup</p>
+                        <p className="text-xs text-gray-600">Your order is ready!</p>
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex justify-between font-semibold text-sm mt-2 pt-2 border-t">
-                    <span>Total</span>
-                    <span>₱{order.totalAmount?.toFixed(2)}</span>
+                  
+                  {/* Current Status Highlight */}
+                  <div className={`mt-3 p-3 rounded-lg ${
+                    order.status === 'pending' ? 'bg-yellow-50 border border-yellow-200' :
+                    order.status === 'preparing' ? 'bg-blue-50 border border-blue-200' :
+                    order.status === 'ready' ? 'bg-green-50 border border-green-200' :
+                    order.status === 'cancelled' ? 'bg-red-50 border border-red-200' :
+                    'bg-gray-50 border border-gray-200'
+                  }`}>
+                    <div className="flex items-center gap-2">
+                      {statusConfig.icon}
+                      <span className="font-medium text-sm">{statusConfig.description}</span>
+                    </div>
+                    
+                    {order.status === 'pending' && (
+                      <p className="text-xs text-gray-600 mt-1">
+                        Estimated ready time: {order.estimatedTime || "15-40 mins"}
+                      </p>
+                    )}
+                    
+                    {order.status === 'ready' && (
+                      <p className="text-xs text-green-700 mt-1">
+                        Show QR code to the stall owner for pickup
+                      </p>
+                    )}
                   </div>
                 </div>
 

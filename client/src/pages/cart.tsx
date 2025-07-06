@@ -70,50 +70,11 @@ export default function Cart() {
   }, 0);
   const total = subtotal;
 
-  const proceedToCheckout = async () => {
+  const proceedToCheckout = () => {
     if (cartItems.length === 0) return;
     
-    setIsProcessing(true);
-    try {
-      // Create order
-      const orderId = `UBF-${new Date().getFullYear()}-${Date.now().toString().slice(-6)}`;
-      
-      await addDocument("orders", {
-        userId: state.user?.id,
-        stallId: cartItems[0]?.stallId, // Assuming single stall for now
-        status: "pending",
-        totalAmount: total,
-        specialInstructions: deliveryInstructions || null,
-        qrCode: orderId,
-        estimatedTime: "25-40 mins",
-        items: cartItems.map(item => ({
-          menuItemId: item.menuItemId,
-          quantity: item.quantity,
-          price: item.price,
-          customizations: item.customizations,
-        })),
-      });
-
-      // Clear cart
-      for (const item of cartItems) {
-        await deleteDocument("cartItems", item.id);
-      }
-
-      toast({
-        title: "Order placed successfully!",
-        description: `Your order ${orderId} has been confirmed.`,
-      });
-
-      setLocation("/orders");
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to place order. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsProcessing(false);
-    }
+    // Navigate to checkout page
+    setLocation("/checkout");
   };
 
   if (cartItems.length === 0) {

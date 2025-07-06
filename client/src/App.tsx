@@ -10,6 +10,7 @@ import Login from "@/pages/login";
 import Home from "@/pages/home";
 import Restaurant from "@/pages/restaurant";
 import Cart from "@/pages/cart";
+import Checkout from "@/pages/checkout";
 import Orders from "@/pages/orders";
 import Profile from "@/pages/profile";
 import Search from "@/pages/search";
@@ -33,6 +34,11 @@ function Router() {
       <Route path="/cart">
         <AuthGuard>
           <Cart />
+        </AuthGuard>
+      </Route>
+      <Route path="/checkout">
+        <AuthGuard>
+          <Checkout />
         </AuthGuard>
       </Route>
       <Route path="/orders">
