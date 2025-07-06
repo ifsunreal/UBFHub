@@ -267,7 +267,7 @@ export default function Login() {
             transition={{ delay: 0.8, duration: 0.5 }}
             className="mb-8"
           >
-            <h2 className="text-2xl font-bold text-white mb-2">Sign up or log in</h2>
+            <h2 className="text-2xl font-bold mb-2 text-[#6d031e]">Sign up or log in</h2>
             <p className="text-[#ae0a33] font-normal">Select your preferred method to continue</p>
           </motion.div>
 
