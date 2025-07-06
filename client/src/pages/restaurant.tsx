@@ -36,7 +36,7 @@ export default function Restaurant() {
   const { state } = useStore();
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeCategory, setActiveCategory] = useState("Popular");
+  const [activeCategory, setActiveCategory] = useState("All");
   const [stall, setStall] = useState<any>(null);
   const [menuItems, setMenuItems] = useState<MenuItemType[]>([]);
   const [selectedItem, setSelectedItem] = useState<MenuItemType | null>(null);
@@ -67,12 +67,12 @@ export default function Restaurant() {
     }
   }, [restaurantId]);
 
-  const categories = ["Popular", "Must Try!", "Main Course", "Appetizer", "Dessert", "Beverage", "Snack"];
+  const categories = ["All", "Popular", "Main Course", "Appetizer", "Dessert", "Beverage", "Snack"];
   
   const filteredItems = menuItems.filter(item => {
     const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = activeCategory === "Popular" ? item.isPopular : 
-                          activeCategory === "Must Try!" ? item.isPopular :
+    const matchesCategory = activeCategory === "All" ? true :
+                          activeCategory === "Popular" ? item.isPopular : 
                           item.category === activeCategory;
     return matchesSearch && matchesCategory;
   });
@@ -196,12 +196,65 @@ export default function Restaurant() {
         <div className="flex items-center gap-4 text-sm text-gray-600 mb-4">
           <div className="flex items-center gap-1">
             <Clock className="w-4 h-4" />
-            <span>Delivery {stall.deliveryTime || "15-40 min"}</span>
+            <span>Pickup ready in {stall.deliveryTime || "15-40 min"}</span>
           </div>
-          <span>₱{stall.deliveryFee || "59.00"} delivery</span>
+          <span>No additional fees for pickup</span>
         </div>
 
+        {/* Quick Actions */}
+        <div className="flex gap-2 mt-4">
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex-1"
+            onClick={() => {
+              // Navigate to ratings section
+              const ratingsElement = document.getElementById('ratings-section');
+              if (ratingsElement) {
+                ratingsElement.scrollIntoView({ behavior: 'smooth' });
+              }
+            }}
+          >
+            <Star className="w-4 h-4 mr-1" />
+            Rate & Review
+          </Button>
+        </div>
+      </motion.div>
 
+      {/* Ratings Section */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.15 }}
+        id="ratings-section"
+        className="bg-white p-4 mb-2"
+      >
+        <h3 className="font-semibold text-gray-900 mb-3">Student Reviews</h3>
+        <div className="space-y-3">
+          <div className="border-b pb-3">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
+                <span className="text-[#6d031e] text-sm font-semibold">A</span>
+              </div>
+              <div>
+                <p className="font-medium text-sm">Anonymous Student</p>
+                <div className="flex items-center gap-1">
+                  {[1,2,3,4,5].map(star => (
+                    <Star key={star} className="w-3 h-3 text-yellow-400 fill-current" />
+                  ))}
+                </div>
+              </div>
+            </div>
+            <p className="text-sm text-gray-600">Great food! Fast pickup and always fresh. The chicken tenders are amazing!</p>
+          </div>
+          
+          <div className="text-center py-4">
+            <p className="text-sm text-gray-600 mb-2">Only students who have ordered can leave reviews</p>
+            <Button variant="outline" size="sm">
+              Order first to review
+            </Button>
+          </div>
+        </div>
       </motion.div>
 
       {/* Search Bar */}
@@ -229,7 +282,7 @@ export default function Restaurant() {
         transition={{ delay: 0.3 }}
         className="bg-white sticky top-[72px] z-30"
       >
-        <div className="flex gap-1 p-4 overflow-x-auto">
+        <div className="flex gap-2 px-4 py-3 overflow-x-auto scrollbar-hide">
           {categories.map((category, index) => (
             <motion.button
               key={category}
@@ -287,7 +340,7 @@ export default function Restaurant() {
                   </div>
                   <p className="text-sm text-gray-600 mb-2">{item.description}</p>
                   <div className="flex items-center justify-between">
-                    <span className="font-semibold text-gray-900">from ₱{item.price}</span>
+                    <span className="font-semibold text-gray-900">₱{item.price}</span>
                     <Button
                       size="sm"
                       className="rounded-full w-8 h-8 p-0"
@@ -358,7 +411,7 @@ export default function Restaurant() {
                   )}
                 </DialogTitle>
                 <p className="text-gray-600 text-left text-sm">{selectedItem.description}</p>
-                <p className="font-semibold text-left">from ₱{selectedItem.price}</p>
+                <p className="font-semibold text-left">₱{selectedItem.price}</p>
               </DialogHeader>
 
               {/* Dynamic Customizations */}
