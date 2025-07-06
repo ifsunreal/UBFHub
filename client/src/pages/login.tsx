@@ -6,11 +6,12 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useLocation } from "wouter";
 import { useStore } from "@/lib/store";
 import { useToast } from "@/hooks/use-toast";
 import { User, Mail, Lock, GraduationCap, Eye, EyeOff, Phone } from "lucide-react";
-import { signIn, signUp, createDocument, getDocument, onAuthStateChange, signInWithGoogle, sendVerificationEmail } from "@/lib/firebase";
+import { signIn, signUp, createDocument, getDocument, onAuthStateChange, signInWithGoogle, sendVerificationEmail, logOut } from "@/lib/firebase";
 
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -98,6 +99,17 @@ export default function Login() {
       const userCredential = await signIn(loginData.email, loginData.password);
       const firebaseUser = userCredential.user;
       
+      // Check if email is verified
+      if (!firebaseUser.emailVerified) {
+        await logOut();
+        toast({
+          title: "Email Not Verified",
+          description: "Please verify your email address before signing in. Check your inbox for the verification link.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
       const userDoc = await getDocument("users", firebaseUser.uid);
       if (userDoc.exists()) {
         const userData = { id: firebaseUser.uid, ...userDoc.data() } as any;
@@ -160,13 +172,13 @@ export default function Login() {
       return;
     }
 
-    // Validate email domain
-    const allowedDomains = ['@foodhub.com', '@ub.edu.ph'];
+    // Validate email domain - only UB emails allowed
+    const allowedDomains = ['@ub.edu.ph'];
     const emailDomain = registerData.email.substring(registerData.email.lastIndexOf('@'));
     if (!allowedDomains.includes(emailDomain)) {
       toast({
         title: "Invalid Email Domain",
-        description: "Only @foodhub.com and @ub.edu.ph email addresses are allowed.",
+        description: "Only @ub.edu.ph email addresses are allowed.",
         variant: "destructive",
       });
       return;
@@ -225,10 +237,13 @@ export default function Login() {
       
       toast({
         title: "Account Created!",
-        description: `A verification email has been sent to ${registerData.email}. Please verify your email to complete registration.`,
+        description: `A verification email has been sent to ${registerData.email}. Please check your email and verify your account before signing in.`,
       });
       
-      // Don't log the user in until email is verified
+      // Sign out the user immediately - they must verify email first
+      await logOut();
+      
+      // Return to login screen
       setAuthMode("social");
       setIsSignUp(false);
       
@@ -285,13 +300,13 @@ export default function Login() {
       } else {
         // New user - validate email domain first
         const email = firebaseUser.email || "";
-        const allowedDomains = ['@foodhub.com', '@ub.edu.ph'];
+        const allowedDomains = ['@ub.edu.ph'];
         const emailDomain = email.substring(email.lastIndexOf('@'));
         
         if (!allowedDomains.includes(emailDomain)) {
           // Sign out the user and show error
           await firebaseUser.delete();
-          throw new Error("Only @foodhub.com and @ub.edu.ph email addresses are allowed.");
+          throw new Error("Only @ub.edu.ph email addresses are allowed.");
         }
         
         // Create account with default student role - they need to complete profile
@@ -715,7 +730,7 @@ export default function Login() {
                   <button
                     type="button"
                     onClick={() => setIsSignUp(true)}
-                    className="hover:text-white font-bold text-[#6d031e]"
+                    className="hover:text-red-700 font-bold text-[#6d031e] transition-colors"
                     disabled={isLoading}
                   >
                     Sign up
@@ -756,7 +771,7 @@ export default function Login() {
                     <Input
                       id="registerEmail"
                       type="email"
-                      placeholder="user@ub.edu.ph or user@foodhub.com"
+                      placeholder="user@ub.edu.ph"
                       className="pl-10 bg-white border-[#6d031e]/20 focus:border-[#6d031e] py-3 text-[#6d031e] placeholder:text-[#6d031e]/40"
                       value={registerData.email}
                       onChange={(e) => setRegisterData(prev => ({ ...prev, email: e.target.value }))}
@@ -837,42 +852,100 @@ export default function Login() {
                   />
                   <Label htmlFor="agreeToTerms" className="text-sm text-[#6d031e] leading-none">
                     I agree to the{" "}
-                    <button
-                      type="button"
-                      className="underline hover:text-red-700 font-semibold"
-                      onClick={() => {
-                        // TODO: Open Terms of Service modal
-                        toast({
-                          title: "Terms of Service",
-                          description: "Terms of Service and Privacy Policy will be available soon.",
-                        });
-                      }}
-                    >
-                      Terms of Service
-                    </button>
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <button
+                          type="button"
+                          className="underline hover:text-red-700 font-semibold"
+                        >
+                          Terms of Service
+                        </button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+                        <DialogHeader>
+                          <DialogTitle>Terms of Service</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-4">
+                          <div>
+                            <h3 className="font-semibold text-gray-800 mb-2">1. Acceptance of Terms</h3>
+                            <p className="text-gray-600 text-sm leading-relaxed">
+                              By using UB FoodHub, you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our services.
+                            </p>
+                          </div>
+                          <div>
+                            <h3 className="font-semibold text-gray-800 mb-2">2. Service Description</h3>
+                            <p className="text-gray-600 text-sm leading-relaxed">
+                              UB FoodHub is a food ordering platform designed for University of Batangas students, faculty, and staff to order food from campus canteen stalls.
+                            </p>
+                          </div>
+                          <div>
+                            <h3 className="font-semibold text-gray-800 mb-2">3. User Responsibilities</h3>
+                            <p className="text-gray-600 text-sm leading-relaxed">
+                              Users are responsible for providing accurate information, maintaining the security of their accounts, and using the service in accordance with university policies.
+                            </p>
+                          </div>
+                          <div>
+                            <h3 className="font-semibold text-gray-800 mb-2">4. Order Policies</h3>
+                            <p className="text-gray-600 text-sm leading-relaxed">
+                              Orders are subject to availability and stall operating hours. Cancellation policies vary by stall. Users must show valid QR codes for order pickup.
+                            </p>
+                          </div>
+                          <div>
+                            <h3 className="font-semibold text-gray-800 mb-2">5. Payment Terms</h3>
+                            <p className="text-gray-600 text-sm leading-relaxed">
+                              Currently, cash payments are accepted upon pickup. Digital payment options may be introduced in the future with additional terms.
+                            </p>
+                          </div>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
                     {" "}and{" "}
-                    <button
-                      type="button"
-                      className="underline hover:text-red-700 font-semibold"
-                      onClick={() => {
-                        // TODO: Open Privacy Policy modal
-                        toast({
-                          title: "Privacy Policy", 
-                          description: "Terms of Service and Privacy Policy will be available soon.",
-                        });
-                      }}
-                    >
-                      Privacy Policy
-                    </button>
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <button
+                          type="button"
+                          className="underline hover:text-red-700 font-semibold"
+                        >
+                          Privacy Policy
+                        </button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+                        <DialogHeader>
+                          <DialogTitle>Privacy Policy</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-4">
+                          <div>
+                            <h3 className="font-semibold text-gray-800 mb-2">Information We Collect</h3>
+                            <p className="text-gray-600 text-sm leading-relaxed">
+                              We collect information you provide directly to us, such as your name, email address, student ID, and order history. We also collect usage information to improve our services.
+                            </p>
+                          </div>
+                          <div>
+                            <h3 className="font-semibold text-gray-800 mb-2">How We Use Your Information</h3>
+                            <p className="text-gray-600 text-sm leading-relaxed">
+                              Your information is used to process orders, communicate with you about your orders, improve our services, and ensure compliance with university policies.
+                            </p>
+                          </div>
+                          <div>
+                            <h3 className="font-semibold text-gray-800 mb-2">Information Sharing</h3>
+                            <p className="text-gray-600 text-sm leading-relaxed">
+                              We share order information with relevant stall owners to fulfill your orders. We do not sell or rent your personal information to third parties.
+                            </p>
+                          </div>
+                          <div>
+                            <h3 className="font-semibold text-gray-800 mb-2">Data Security</h3>
+                            <p className="text-gray-600 text-sm leading-relaxed">
+                              We implement appropriate security measures to protect your personal information against unauthorized access, alteration, disclosure, or destruction.
+                            </p>
+                          </div>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
                     {" *"}
                   </Label>
                 </div>
                 
-                <div className="text-xs text-[#6d031e]/70 bg-[#6d031e]/5 p-3 rounded-lg">
-                  <strong>Email Requirements:</strong> Only @foodhub.com and @ub.edu.ph email addresses are allowed.
-                  <br />
-                  <strong>Verification:</strong> A verification email will be sent to complete registration.
-                </div>
+
               </div>
               
               <Button 
@@ -896,7 +969,7 @@ export default function Login() {
                   <button
                     type="button"
                     onClick={() => setIsSignUp(false)}
-                    className="hover:text-white font-bold text-[#6d031e]"
+                    className="hover:text-red-700 font-bold text-[#6d031e] transition-colors"
                     disabled={isLoading}
                   >
                     Sign in
