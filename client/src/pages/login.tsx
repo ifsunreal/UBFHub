@@ -463,7 +463,7 @@ export default function Login() {
             >
               <div className="space-y-3">
                 <div className="space-y-2">
-                  <Label htmlFor="fullName" className="text-white font-medium">Full Name</Label>
+                  <Label htmlFor="fullName" className="font-medium" style={{ color: '#6d031e' }}>Full Name</Label>
                   <div className="relative">
                     <User className="absolute left-3 top-3 h-4 w-4 text-red-300" />
                     <Input
