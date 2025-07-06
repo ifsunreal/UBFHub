@@ -161,6 +161,12 @@ function toast({ ...props }: Toast) {
     },
   })
 
+  // Auto-dismiss after 4 seconds unless it's a destructive toast (which stays for 6 seconds)
+  const duration = props.variant === "destructive" ? 6000 : 4000;
+  setTimeout(() => {
+    dismiss()
+  }, duration)
+
   return {
     id: id,
     dismiss,

@@ -151,6 +151,16 @@ UB FoodHub is a comprehensive mobile web application designed for the University
 - **Revenue Accuracy**: Revenue calculations now only count completed orders, not pending/preparing ones
 - **Professional Order Display**: Enhanced order cards with customer names, payment info, and organized item listings
 
+### Modern UI/UX Enhancement (July 06, 2025)
+- **Splash Screen**: Added beautiful animated splash screen with logo animation, glass morphism effects, and floating particles
+- **Loading Indicators**: Implemented modern loading components with logo animations, spinning circles, and contextual messages
+- **Liquid Glass Effects**: Added backdrop blur effects, glass morphism cards, and liquid animations throughout the app
+- **Auto-Dismissing Notifications**: Toast notifications now automatically disappear after 3-4 seconds (4s normal, 6s errors)
+- **Real-Time Updates**: All pages now update dynamically without requiring refresh or tab switching
+- **Enhanced Animations**: Added smooth transitions, hover effects, floating animations, and liquid button effects
+- **Dynamic Menu Items**: Menu items now include glass card effects, floating animations, and smooth add-to-cart interactions
+- **Improved Loading States**: "Adding to Cart", "Updating Order", and other actions now show proper loading indicators
+
 ## Changelog
 
 ```
@@ -163,6 +173,11 @@ Changelog:
 - July 06, 2025. Removed all hardcoded data, implemented real-time search
 - July 06, 2025. Fixed logout functionality and enhanced UX
 - July 06, 2025. Fixed stall dashboard form validation and improved color contrast
+- July 06, 2025. Fixed customer name and student ID display in order details
+- July 06, 2025. Added splash screen with beautiful animations and glass effects
+- July 06, 2025. Implemented liquid glass effects and modern loading indicators
+- July 06, 2025. Made all pages dynamically update without refresh
+- July 06, 2025. Auto-dismissing notifications and enhanced animations
 ```
 
 ## User Preferences

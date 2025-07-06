@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -6,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import RestaurantCard from "@/components/restaurant-card";
 import BottomNav from "@/components/layout/bottom-nav";
 import FloatingCart from "@/components/floating-cart";
+import LoadingIndicator from "@/components/loading-indicator";
 import { Search, MapPin, Clock, Star, Award, Bell } from "lucide-react";
 import { subscribeToCollection } from "@/lib/firebase";
 import { useStore } from "@/lib/store";
