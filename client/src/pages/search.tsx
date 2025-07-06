@@ -78,7 +78,7 @@ export default function SearchPage() {
       {/* Header */}
       <div className="bg-white sticky top-0 z-10 border-b border-gray-200">
         <div className="flex items-center gap-4 p-4 bg-[#820d2a]">
-          <Button
+          <Button 
             variant="ghost"
             size="sm"
             onClick={() => setLocation("/")}

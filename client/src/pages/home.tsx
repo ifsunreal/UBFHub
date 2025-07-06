@@ -27,7 +27,7 @@ export default function Home() {
     // Subscribe to real-time stalls data
     const unsubscribe = subscribeToCollection("stalls", (stallsData) => {
       // Only show active stalls
-      const activeStalls = stallsData.filter(stall => stall.isActive);
+      const activeStalls = stallsData.filter((stall) => stall.isActive);
       setStalls(activeStalls);
       setIsLoading(false);
     });
@@ -36,18 +36,29 @@ export default function Home() {
   }, []);
 
   const filteredStalls = stalls.filter((stall) => {
-    const matchesSearch = stall.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         stall.category.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesFilter = activeFilter === "all" || stall.category.toLowerCase() === activeFilter.toLowerCase();
+    const matchesSearch =
+      stall.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      stall.category.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesFilter =
+      activeFilter === "all" ||
+      stall.category.toLowerCase() === activeFilter.toLowerCase();
     return matchesSearch && matchesFilter;
   });
 
-  const categories = ["all", "Filipino", "Asian", "Western", "Snacks", "Beverages", "Desserts"];
+  const categories = [
+    "all",
+    "Filipino",
+    "Asian",
+    "Western",
+    "Snacks",
+    "Beverages",
+    "Desserts",
+  ];
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-gradient-to-r from-[#8B0000] via-[#DC143C] to-[#B22222] text-white sticky top-0 z-40">
+      <div className="bg-gradient-to-r from-[#820d2a] via-[#820d2a] to-[#B22222] text-white sticky top-0 z-40">
         <div className="px-4 py-3">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
@@ -58,14 +69,20 @@ export default function Home() {
               {/* Loyalty Points */}
               <div className="flex items-center gap-1 bg-maroon-700 px-2 py-1 rounded-full">
                 <Award className="w-4 h-4" />
-                <span className="text-xs font-medium">{state.user?.loyaltyPoints || 0} pts</span>
+                <span className="text-xs font-medium">
+                  {state.user?.loyaltyPoints || 0} pts
+                </span>
               </div>
               <Bell className="w-5 h-5" />
             </div>
           </div>
-          
-          <h1 className="text-xl font-bold mb-1">Welcome back, {state.user?.fullName?.split(' ')[0] || 'Student'}!</h1>
-          <p className="text-maroon-100 text-sm">What would you like to eat today?</p>
+
+          <h1 className="text-xl font-bold mb-1">
+            Welcome back, {state.user?.fullName?.split(" ")[0] || "Student"}!
+          </h1>
+          <p className="text-maroon-100 text-sm">
+            What would you like to eat today?
+          </p>
         </div>
       </div>
 
@@ -86,11 +103,15 @@ export default function Home() {
           <CardContent className="p-4">
             <div className="grid grid-cols-3 gap-4 text-center">
               <div>
-                <div className="text-lg font-bold text-maroon-700">{stalls.length}</div>
+                <div className="text-lg font-bold text-maroon-700">
+                  {stalls.length}
+                </div>
                 <div className="text-xs text-maroon-600">Active Stalls</div>
               </div>
               <div>
-                <div className="text-lg font-bold text-maroon-700">{state.user?.loyaltyPoints || 0}</div>
+                <div className="text-lg font-bold text-maroon-700">
+                  {state.user?.loyaltyPoints || 0}
+                </div>
                 <div className="text-xs text-maroon-600">Loyalty Points</div>
               </div>
               <div>
@@ -110,8 +131,8 @@ export default function Home() {
               size="sm"
               onClick={() => setActiveFilter(category)}
               className={`flex-shrink-0 ${
-                activeFilter === category 
-                  ? "bg-maroon-600 hover:bg-maroon-700" 
+                activeFilter === category
+                  ? "bg-maroon-600 hover:bg-maroon-700"
                   : "border-maroon-200 text-maroon-700 hover:bg-maroon-50"
               }`}
             >
@@ -123,26 +144,39 @@ export default function Home() {
         {/* Featured Section */}
         {activeFilter === "all" && (
           <div>
-            <h2 className="text-lg font-semibold text-gray-900 mb-3">Featured Today</h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-3">
+              Featured Today
+            </h2>
             <div className="grid gap-3">
               {stalls
-                .filter(stall => stall.rating > 4.0)
+                .filter((stall) => stall.rating > 4.0)
                 .slice(0, 2)
                 .map((stall) => (
-                  <Card key={stall.id} className="bg-white border-gray-200 shadow-sm">
+                  <Card
+                    key={stall.id}
+                    className="bg-white border-gray-200 shadow-sm"
+                  >
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between">
                         <div className="flex-1">
-                          <h3 className="font-medium text-gray-900">{stall.name}</h3>
-                          <p className="text-sm text-gray-600 mt-1">{stall.description}</p>
+                          <h3 className="font-medium text-gray-900">
+                            {stall.name}
+                          </h3>
+                          <p className="text-sm text-gray-600 mt-1">
+                            {stall.description}
+                          </p>
                           <div className="flex items-center gap-3 mt-2">
                             <div className="flex items-center gap-1">
                               <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                              <span className="text-sm font-medium">{stall.rating || "4.5"}</span>
+                              <span className="text-sm font-medium">
+                                {stall.rating || "4.5"}
+                              </span>
                             </div>
                             <div className="flex items-center gap-1">
                               <Clock className="w-4 h-4 text-gray-400" />
-                              <span className="text-sm text-gray-600">{stall.deliveryTime || "15-30 min"}</span>
+                              <span className="text-sm text-gray-600">
+                                {stall.deliveryTime || "15-30 min"}
+                              </span>
                             </div>
                             <Badge variant="outline" className="text-xs">
                               {stall.category}
@@ -152,8 +186,7 @@ export default function Home() {
                       </div>
                     </CardContent>
                   </Card>
-                ))
-              }
+                ))}
             </div>
           </div>
         )}
@@ -163,14 +196,14 @@ export default function Home() {
           <h2 className="text-lg font-semibold text-gray-900 mb-3">
             {activeFilter === "all" ? "All Stalls" : `${activeFilter} Stalls`}
           </h2>
-          
+
           {isLoading ? (
             <Card className="bg-white border-gray-200">
               <CardContent className="p-8 text-center">
-                <LoadingIndicator 
-                  message="Fetching stalls..." 
-                  variant="logo" 
-                  size="lg" 
+                <LoadingIndicator
+                  message="Fetching stalls..."
+                  variant="logo"
+                  size="lg"
                 />
               </CardContent>
             </Card>
@@ -179,10 +212,9 @@ export default function Home() {
               <CardContent className="p-8 text-center">
                 <div className="text-gray-400 mb-2">No stalls found</div>
                 <p className="text-sm text-gray-600">
-                  {searchQuery 
-                    ? "Try adjusting your search terms" 
-                    : "No stalls available in this category"
-                  }
+                  {searchQuery
+                    ? "Try adjusting your search terms"
+                    : "No stalls available in this category"}
                 </p>
               </CardContent>
             </Card>
@@ -215,9 +247,9 @@ export default function Home() {
 
       <BottomNav />
       <FloatingCart />
-      
+
       {/* Loading Overlay */}
-      <LoadingOverlay 
+      <LoadingOverlay
         isVisible={showLoadingOverlay}
         message={loadingMessage}
         onClose={() => setShowLoadingOverlay(false)}

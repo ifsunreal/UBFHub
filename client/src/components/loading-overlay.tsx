@@ -8,10 +8,10 @@ interface LoadingOverlayProps {
   onClose?: () => void;
 }
 
-export default function LoadingOverlay({ 
-  isVisible, 
+export default function LoadingOverlay({
+  isVisible,
   message = "Loading...",
-  onClose 
+  onClose,
 }: LoadingOverlayProps) {
   if (!isVisible) return null;
 
@@ -22,17 +22,17 @@ export default function LoadingOverlay({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-[#8B0000] via-[#DC143C] to-[#B22222]"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-[#820d2a] via-[#820d2a] to-[#820d2a]"
           onClick={onClose}
         >
-          <LoadingIndicator 
-            variant="splash" 
+          <LoadingIndicator
+            variant="splash"
             message={message}
             className="relative z-10"
           />
         </motion.div>
       )}
     </AnimatePresence>,
-    document.body
+    document.body,
   );
 }

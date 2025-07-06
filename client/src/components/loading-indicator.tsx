@@ -8,47 +8,53 @@ interface LoadingIndicatorProps {
   className?: string;
 }
 
-export default function LoadingIndicator({ 
-  message = "Loading...", 
-  size = "md", 
+export default function LoadingIndicator({
+  message = "Loading...",
+  size = "md",
   variant = "spinner",
-  className = ""
+  className = "",
 }: LoadingIndicatorProps) {
   const sizeClasses = {
     sm: "w-4 h-4",
-    md: "w-8 h-8", 
-    lg: "w-12 h-12"
+    md: "w-8 h-8",
+    lg: "w-12 h-12",
   };
 
   const logoSizeClasses = {
     sm: "w-8 h-8",
     md: "w-12 h-12",
-    lg: "w-16 h-16"
+    lg: "w-16 h-16",
   };
 
   if (variant === "splash") {
     return (
-      <div className={`flex flex-col items-center justify-center space-y-6 p-8 ${className}`}>
+      <div
+        className={`flex flex-col items-center justify-center space-y-6 p-8 ${className}`}
+      >
         {/* Floating particles */}
         <div className="absolute inset-0 overflow-hidden">
           {[...Array(20)].map((_, i) => (
             <motion.div
               key={i}
               className="absolute w-2 h-2 bg-white/20 rounded-full"
-              initial={{ 
-                x: Math.random() * (typeof window !== 'undefined' ? window.innerWidth : 800),
-                y: Math.random() * (typeof window !== 'undefined' ? window.innerHeight : 600),
-                scale: 0
+              initial={{
+                x:
+                  Math.random() *
+                  (typeof window !== "undefined" ? window.innerWidth : 800),
+                y:
+                  Math.random() *
+                  (typeof window !== "undefined" ? window.innerHeight : 600),
+                scale: 0,
               }}
               animate={{
                 y: [null, Math.random() * -100],
                 scale: [0, 1, 0],
-                opacity: [0, 1, 0]
+                opacity: [0, 1, 0],
               }}
               transition={{
                 duration: 3 + Math.random() * 2,
                 repeat: Infinity,
-                delay: Math.random() * 2
+                delay: Math.random() * 2,
               }}
             />
           ))}
@@ -62,14 +68,14 @@ export default function LoadingIndicator({
           transition={{ duration: 1, ease: "easeOut" }}
         >
           <motion.div
-            className="w-24 h-24 rounded-full flex items-center justify-center shadow-2xl glass-card relative overflow-hidden"
-            animate={{ 
-              rotate: [0, 360],
-              scale: [1, 1.05, 1]
+            className="w-24 h-24 rounded-full flex items-center justify-center relative overflow-hidden bg-transparent"
+            animate={{
+              y: [0, -10, 0],
             }}
-            transition={{ 
-              rotate: { duration: 3, repeat: Infinity, ease: "linear" },
-              scale: { duration: 2, repeat: Infinity }
+            transition={{
+              duration: 1,
+              repeat: Infinity,
+              ease: "easeInOut",
             }}
           >
             <img
@@ -78,13 +84,6 @@ export default function LoadingIndicator({
               className="w-20 h-20 object-contain drop-shadow-lg"
             />
           </motion.div>
-          
-          {/* Glow effect */}
-          <motion.div
-            className="absolute inset-0 w-24 h-24 bg-gradient-to-br from-[#8B0000] via-[#DC143C] to-[#B22222] rounded-full blur-lg opacity-30"
-            animate={{ scale: [1, 1.2, 1] }}
-            transition={{ duration: 2, repeat: Infinity }}
-          />
         </motion.div>
 
         {/* Message */}
@@ -101,7 +100,7 @@ export default function LoadingIndicator({
           >
             {message}
           </motion.p>
-          
+
           {/* Loading dots */}
           <div className="flex justify-center space-x-1">
             {[0, 1, 2].map((i) => (
@@ -120,15 +119,17 @@ export default function LoadingIndicator({
 
   if (variant === "logo") {
     return (
-      <div className={`flex flex-col items-center justify-center space-y-4 ${className}`}>
+      <div
+        className={`flex flex-col items-center justify-center space-y-4 ${className}`}
+      >
         <motion.div
-          animate={{ 
-            scale: [1, 1.1, 1],
-            rotate: [0, 360]
+          animate={{
+            y: [0, -10, 0],
           }}
-          transition={{ 
-            scale: { duration: 2, repeat: Infinity },
-            rotate: { duration: 3, repeat: Infinity, ease: "linear" }
+          transition={{
+            duration: 1,
+            repeat: Infinity,
+            ease: "easeInOut",
           }}
           className="relative"
         >
@@ -137,13 +138,8 @@ export default function LoadingIndicator({
             alt="Loading"
             className={`${logoSizeClasses[size]} object-contain drop-shadow-lg`}
           />
-          <motion.div
-            animate={{ rotate: -360 }}
-            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-            className={`absolute inset-0 ${logoSizeClasses[size]} border-2 border-transparent border-t-[#6d031e] rounded-full`}
-          />
         </motion.div>
-        
+
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -225,12 +221,12 @@ export default function LoadingIndicator({
 }
 
 // Button loading state component
-export function LoadingButton({ 
-  children, 
-  isLoading, 
-  loadingText, 
+export function LoadingButton({
+  children,
+  isLoading,
+  loadingText,
   className = "",
-  ...props 
+  ...props
 }: {
   children: React.ReactNode;
   isLoading: boolean;
@@ -242,7 +238,7 @@ export function LoadingButton({
     <button
       disabled={isLoading}
       className={`relative inline-flex items-center justify-center ${className} ${
-        isLoading ? 'cursor-not-allowed opacity-70' : ''
+        isLoading ? "hidden" : ""
       }`}
       {...props}
     >
@@ -252,9 +248,9 @@ export function LoadingButton({
           animate={{ opacity: 1 }}
           className="absolute inset-0 flex items-center justify-center bg-inherit rounded-inherit"
         >
-          <LoadingIndicator 
-            message={loadingText} 
-            size="sm" 
+          <LoadingIndicator
+            message={loadingText}
+            size="sm"
             variant="dots"
             className="text-white"
           />
@@ -262,7 +258,7 @@ export function LoadingButton({
       )}
       <motion.div
         animate={{ opacity: isLoading ? 0 : 1 }}
-        className={isLoading ? 'invisible' : 'visible'}
+        className={isLoading ? "invisible" : "visible"}
       >
         {children}
       </motion.div>
