@@ -881,17 +881,72 @@ export default function StallDashboard() {
             
             <div className="space-y-4">
               {filteredOrders.map((order) => (
-                <Card key={order.id}>
+                <Card key={order.id} className="hover:shadow-md transition-shadow">
                   <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-semibold text-[#6d031e]">Order {order.qrCode}</p>
-                        <p className="text-sm text-gray-600">
-                          {new Date(order.createdAt?.toDate ? order.createdAt.toDate() : order.createdAt).toLocaleString()}
-                        </p>
-                        <p className="text-lg font-bold text-gray-900">₱{order.totalAmount?.toFixed(2)}</p>
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <p className="font-semibold text-[#6d031e]">Order {order.qrCode}</p>
+                          {order.isMultiStallOrder && (
+                            <Badge variant="outline" className="text-blue-600 border-blue-200 bg-blue-50">
+                              Multi-Stall
+                            </Badge>
+                          )}
+                          {order.groupOrderEmails && order.groupOrderEmails.length > 0 && (
+                            <Badge variant="outline" className="text-purple-600 border-purple-200 bg-purple-50">
+                              <Users className="w-3 h-3 mr-1" />
+                              Group Order
+                            </Badge>
+                          )}
+                          {order.scheduledTime && (
+                            <Badge variant="outline" className="text-orange-600 border-orange-200 bg-orange-50">
+                              <Clock className="w-3 h-3 mr-1" />
+                              Scheduled
+                            </Badge>
+                          )}
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                          <div>
+                            <p className="text-gray-600">
+                              <span className="font-medium">Customer:</span> {order.customerName || 'Student'}
+                            </p>
+                            <p className="text-gray-600">
+                              <span className="font-medium">Student ID:</span> {order.studentId || 'Not provided'}
+                            </p>
+                            <p className="text-gray-600">
+                              <span className="font-medium">Order Date:</span> {new Date(order.createdAt?.toDate ? order.createdAt.toDate() : order.createdAt).toLocaleString()}
+                            </p>
+                          </div>
+                          
+                          <div>
+                            {order.scheduledTime && (
+                              <p className="text-orange-700 font-medium">
+                                <Clock className="w-4 h-4 inline mr-1" />
+                                Ready by: {order.scheduledTime}
+                              </p>
+                            )}
+                            {order.groupOrderEmails && order.groupOrderEmails.length > 0 && (
+                              <p className="text-purple-700 font-medium">
+                                <Users className="w-4 h-4 inline mr-1" />
+                                Group: {order.groupOrderEmails.length + 1} members
+                              </p>
+                            )}
+                            <p className="text-lg font-bold text-gray-900 mt-1">₱{order.totalAmount?.toFixed(2)}</p>
+                          </div>
+                        </div>
+
+                        {order.paymentMethod === 'cash' && order.cashAmount && (
+                          <div className="mt-2 p-2 bg-green-50 rounded-lg">
+                            <p className="text-sm text-green-700">
+                              <span className="font-medium">Cash Payment:</span> ₱{order.cashAmount.toFixed(2)} 
+                              <span className="ml-2 font-medium">Change:</span> ₱{(order.cashAmount - order.totalAmount).toFixed(2)}
+                            </p>
+                          </div>
+                        )}
                       </div>
-                      <div className="flex items-center gap-2">
+                      
+                      <div className="flex flex-col items-end gap-2 ml-4">
                         <Select
                           value={order.status}
                           onValueChange={(value) => updateOrderStatus(order.id, value)}
@@ -907,6 +962,18 @@ export default function StallDashboard() {
                             <SelectItem value="cancelled">Cancelled</SelectItem>
                           </SelectContent>
                         </Select>
+                        
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            setSelectedOrder(order);
+                            setShowOrderDetails(true);
+                          }}
+                          className="text-[#6d031e] border-[#6d031e] hover:bg-[#6d031e] hover:text-white"
+                        >
+                          View Details
+                        </Button>
                       </div>
                     </div>
                   </CardContent>
@@ -1363,6 +1430,84 @@ export default function StallDashboard() {
                   </p>
                 </div>
               </div>
+
+              {/* Group Order Information */}
+              {selectedOrder.groupOrderEmails && selectedOrder.groupOrderEmails.length > 0 && (
+                <div className="bg-purple-50 p-4 rounded-lg border-l-4 border-purple-500">
+                  <h3 className="font-semibold text-gray-900 mb-2 flex items-center">
+                    <Users className="w-4 h-4 mr-2 text-purple-600" />
+                    Group Order Information
+                  </h3>
+                  <div className="space-y-1 text-sm">
+                    <p className="font-medium text-purple-800">
+                      This is a group order with {selectedOrder.groupOrderEmails.length + 1} total members:
+                    </p>
+                    <div className="ml-4 space-y-1">
+                      <p className="text-purple-700">• {selectedOrder.customerName || 'Lead Member'} (order creator)</p>
+                      {selectedOrder.groupOrderEmails.map((email: string, index: number) => (
+                        <p key={index} className="text-purple-700">• {email}</p>
+                      ))}
+                    </div>
+                    <div className="mt-2 p-2 bg-purple-100 rounded">
+                      <p className="text-xs text-purple-700">
+                        💡 Group orders allow multiple UB students to order together. Please prepare the full order for pickup by the lead member.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Scheduled Pickup Information */}
+              {selectedOrder.scheduledTime && (
+                <div className="bg-orange-50 p-4 rounded-lg border-l-4 border-orange-500">
+                  <h3 className="font-semibold text-gray-900 mb-2 flex items-center">
+                    <Clock className="w-4 h-4 mr-2 text-orange-600" />
+                    Scheduled Pickup Time
+                  </h3>
+                  <div className="space-y-1 text-sm">
+                    <p className="font-medium text-orange-800">
+                      Order must be ready by: {selectedOrder.scheduledTime}
+                    </p>
+                    <div className="mt-2 p-2 bg-orange-100 rounded">
+                      <p className="text-xs text-orange-700">
+                        ⏰ This is a scheduled order (Order Later feature). Please ensure it's ready by the specified time.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Multi-Stall Order Information */}
+              {selectedOrder.isMultiStallOrder && (
+                <div className="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500">
+                  <h3 className="font-semibold text-gray-900 mb-2 flex items-center">
+                    <Package className="w-4 h-4 mr-2 text-blue-600" />
+                    Multi-Stall Order
+                  </h3>
+                  <div className="space-y-1 text-sm">
+                    <p className="font-medium text-blue-800">
+                      This order is part of a multi-stall order (ID: {selectedOrder.mainOrderId})
+                    </p>
+                    <div className="mt-2 p-2 bg-blue-100 rounded">
+                      <p className="text-xs text-blue-700">
+                        🏪 The customer ordered from multiple stalls. Coordinate timing with other stalls for pickup.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Additional Order Preferences */}
+              {(selectedOrder.noCutlery) && (
+                <div className="bg-green-50 p-4 rounded-lg">
+                  <h3 className="font-semibold text-gray-900 mb-2">Order Preferences</h3>
+                  <div className="space-y-1 text-sm">
+                    {selectedOrder.noCutlery && (
+                      <p className="text-green-700">🌱 No cutlery needed (eco-friendly option)</p>
+                    )}
+                  </div>
+                </div>
+              )}
 
               {/* Order Items */}
               <div>

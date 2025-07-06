@@ -188,6 +188,20 @@ UB FoodHub is a comprehensive mobile web application designed for the University
 - **Security Improvements**: Email domain validation prevents unauthorized registrations, proper error handling for authentication flows
 - **Firebase Security**: Moved Firebase configuration to environment variables for enhanced security
 
+### Advanced Cart & Ordering Features Implementation (July 06, 2025)
+- **Group Ordering System**: Students can add @ub.edu.ph email addresses to include friends in their orders
+- **Scheduled Pickup Times**: Order Later feature like FoodPanda - students can schedule pickup times
+- **Multi-Stall Ordering**: Students can order from different stalls in one consolidated order
+- **Enhanced Cash Validation**: Shows proper "amount is not enough" validation when cash amount is below total
+- **Stall Dashboard Enhancements**: Food stall owners can now see:
+  - Group order information with all member emails listed
+  - Scheduled pickup times with clear deadline indicators
+  - Multi-stall order coordination information
+  - Enhanced order cards with badges for special order types
+  - Detailed order modal with all group/scheduling information
+- **Improved Order Display**: Visual badges for group orders, scheduled orders, and multi-stall orders
+- **Order Coordination**: Multi-stall orders show main order ID for coordination between stalls
+
 ## Changelog
 
 ```
@@ -208,6 +222,9 @@ Changelog:
 - July 06, 2025. Implemented comprehensive loading states using splash screen design
 - July 06, 2025. Fixed cart back button color and matched header colors across all pages
 - July 06, 2025. Added contextual loading messages for all user actions (add, checkout, remove, etc.)
+- July 06, 2025. Enhanced authentication security with @ub.edu.ph domain restriction and Firebase environment variables
+- July 06, 2025. Implemented advanced cart features: group ordering, scheduled pickup, multi-stall ordering
+- July 06, 2025. Enhanced stall dashboard to display group order details and scheduled pickup times for food stall owners
 ```
 
 ## User Preferences
