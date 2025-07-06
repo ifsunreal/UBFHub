@@ -1,0 +1,191 @@
+import { useState } from "react";
+import { ArrowLeft, Settings, Crown, Ticket, Medal, Users, HelpCircle, Building, FileText, LogOut } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { useLocation } from "wouter";
+import { useStore } from "@/lib/store";
+import BottomNav from "@/components/layout/bottom-nav";
+
+export default function Profile() {
+  const [, setLocation] = useLocation();
+  const { state, dispatch } = useStore();
+
+  const handleLogout = () => {
+    dispatch({ type: "SET_USER", payload: null });
+    setLocation("/");
+  };
+
+  const menuItems = [
+    { 
+      icon: Crown, 
+      title: "Try UB Pro for free now", 
+      subtitle: "Get exclusive benefits",
+      bgColor: "bg-purple-50",
+      iconColor: "text-purple-600"
+    },
+    { 
+      icon: Ticket, 
+      title: "Vouchers", 
+      subtitle: "Available offers",
+      bgColor: "bg-gray-50",
+      iconColor: "text-gray-600"
+    },
+    { 
+      icon: Medal, 
+      title: "UB Rewards", 
+      subtitle: "Earn points",
+      bgColor: "bg-gray-50",
+      iconColor: "text-gray-600"
+    },
+    { 
+      icon: Users, 
+      title: "Invite friends", 
+      subtitle: "Refer and earn",
+      bgColor: "bg-gray-50",
+      iconColor: "text-gray-600"
+    },
+  ];
+
+  const generalItems = [
+    { 
+      icon: HelpCircle, 
+      title: "Help center", 
+      subtitle: "FAQs and support"
+    },
+    { 
+      icon: Building, 
+      title: "UB FoodHub for business", 
+      subtitle: "Partner with us"
+    },
+    { 
+      icon: FileText, 
+      title: "Terms & policies", 
+      subtitle: "Legal information"
+    },
+  ];
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <header className="bg-maroon-800 text-white p-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center">
+            <button
+              onClick={() => setLocation("/")}
+              className="mr-4 p-2 hover:bg-maroon-700 rounded-full"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </button>
+            <h1 className="text-lg font-semibold">Account</h1>
+          </div>
+          <button className="text-maroon-200 hover:text-white">
+            <Settings className="h-5 w-5" />
+          </button>
+        </div>
+      </header>
+
+      <div className="p-4 space-y-6 pb-20">
+        {/* Profile Header */}
+        <div className="flex items-center space-x-4">
+          <div className="w-16 h-16 bg-maroon-100 rounded-full flex items-center justify-center">
+            <span className="text-maroon-600 text-xl font-semibold">
+              {state.user?.fullName?.charAt(0) || "U"}
+            </span>
+          </div>
+          <div>
+            <h3 className="font-semibold text-gray-800">
+              {state.user?.fullName || "Student Name"}
+            </h3>
+            <p className="text-sm text-gray-600">{state.user?.email || "student@ub.edu.ph"}</p>
+            <p className="text-sm text-gray-600">
+              {state.user?.studentId || "UB-2024-001234"}
+            </p>
+          </div>
+        </div>
+
+        {/* Perks Section */}
+        <div>
+          <h4 className="font-medium text-gray-800 mb-3">Perks for you</h4>
+          <div className="space-y-3">
+            {menuItems.map((item, index) => (
+              <Card key={index} className="cursor-pointer hover:shadow-md transition-shadow">
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className={`p-2 rounded-lg ${item.bgColor}`}>
+                        <item.icon className={`h-5 w-5 ${item.iconColor}`} />
+                      </div>
+                      <div>
+                        <p className="font-medium text-gray-800">{item.title}</p>
+                        <p className="text-sm text-gray-600">{item.subtitle}</p>
+                      </div>
+                    </div>
+                    <ArrowLeft className="h-4 w-4 text-gray-400 rotate-180" />
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+
+        {/* General Section */}
+        <div>
+          <h4 className="font-medium text-gray-800 mb-3">General</h4>
+          <div className="space-y-3">
+            {generalItems.map((item, index) => (
+              <Card key={index} className="cursor-pointer hover:shadow-md transition-shadow">
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className="p-2 rounded-lg bg-gray-50">
+                        <item.icon className="h-5 w-5 text-gray-600" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-gray-800">{item.title}</p>
+                        <p className="text-sm text-gray-600">{item.subtitle}</p>
+                      </div>
+                    </div>
+                    <ArrowLeft className="h-4 w-4 text-gray-400 rotate-180" />
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+
+        {/* Order History */}
+        <Card className="cursor-pointer hover:shadow-md transition-shadow">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="p-2 rounded-lg bg-maroon-50">
+                  <FileText className="h-5 w-5 text-maroon-600" />
+                </div>
+                <div>
+                  <p className="font-medium text-gray-800">Order History</p>
+                  <p className="text-sm text-gray-600">View all your past orders</p>
+                </div>
+              </div>
+              <ArrowLeft className="h-4 w-4 text-gray-400 rotate-180" />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Logout Button */}
+        <Button
+          onClick={handleLogout}
+          variant="outline"
+          className="w-full text-red-600 border-red-200 hover:bg-red-50"
+        >
+          <LogOut className="h-4 w-4 mr-2" />
+          Log out
+        </Button>
+
+        {/* Version */}
+        <p className="text-center text-xs text-gray-500">Version 1.0.0 (2024001)</p>
+      </div>
+
+      <BottomNav />
+    </div>
+  );
+}
