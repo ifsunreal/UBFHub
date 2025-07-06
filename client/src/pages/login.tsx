@@ -227,59 +227,53 @@ export default function Login() {
 
   if (authMode === "social") {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-maroon-500 via-maroon-600 to-maroon-700 flex flex-col">
-        {/* Hero Section with Logo */}
+      <div className="min-h-screen bg-gray-800 flex items-center justify-center p-4">
         <motion.div
-          initial={{ opacity: 0, y: -50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="flex-1 flex flex-col items-center justify-center px-6 py-12"
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.6 }}
+          className="w-full max-w-sm bg-white rounded-3xl shadow-2xl overflow-hidden"
         >
-          <motion.div
-            initial={{ scale: 0, rotate: -180 }}
-            animate={{ scale: 1, rotate: 0 }}
-            transition={{ delay: 0.3, duration: 0.6, type: "spring" }}
-            className="w-32 h-32 mb-8"
-          >
-            <img 
-              src="/logo.png" 
-              alt="UB FoodHub Logo" 
-              className="w-full h-full object-contain drop-shadow-2xl"
-            />
-          </motion.div>
-          
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6, duration: 0.5 }}
-            className="text-center mb-12"
-          >
-            <h1 className="text-4xl font-bold text-white mb-3">UB FoodHub</h1>
-            <p className="text-maroon-100 text-lg">Your campus dining companion</p>
-          </motion.div>
-        </motion.div>
-
-        {/* Bottom Sign-in Card */}
-        <motion.div
-          initial={{ y: 100, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.4, duration: 0.6 }}
-          className="bg-white rounded-t-3xl px-6 py-8 shadow-2xl"
-        >
-          <div className="max-w-sm mx-auto">
+          {/* Hero Section with Logo */}
+          <div className="bg-gradient-to-br from-maroon-600 via-maroon-700 to-maroon-800 px-6 py-16 text-center">
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
+              initial={{ scale: 0, rotate: -180 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ delay: 0.3, duration: 0.6, type: "spring" }}
+              className="w-24 h-24 mx-auto mb-6 bg-maroon-500 rounded-2xl flex items-center justify-center shadow-xl"
+            >
+              <img 
+                src="/logo.png" 
+                alt="UB FoodHub Logo" 
+                className="w-16 h-16 object-contain"
+              />
+            </motion.div>
+            
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6, duration: 0.5 }}
+            >
+              <p className="text-maroon-100 text-lg font-medium">Your campus dining companion</p>
+            </motion.div>
+          </div>
+
+          {/* Bottom Sign-in Card */}
+          <div className="px-6 py-8">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.8, duration: 0.5 }}
+              className="mb-8"
             >
               <h2 className="text-2xl font-bold text-gray-900 mb-2">Sign up or log in</h2>
-              <p className="text-gray-600 mb-8">Select your preferred method to continue</p>
+              <p className="text-gray-600">Select your preferred method to continue</p>
             </motion.div>
 
             <div className="space-y-4">
               <motion.div
-                initial={{ x: -50, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 1, duration: 0.5 }}
               >
                 <Button
@@ -298,8 +292,8 @@ export default function Login() {
               </motion.div>
 
               <motion.div
-                initial={{ x: 50, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 1.2, duration: 0.5 }}
               >
                 <Button
@@ -317,7 +311,7 @@ export default function Login() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 1.4, duration: 0.5 }}
-              className="text-xs text-gray-500 text-center mt-6"
+              className="text-xs text-gray-500 text-center mt-8"
             >
               By signing up you agree to our Terms and Conditions and Privacy Policy.
             </motion.p>
@@ -327,60 +321,65 @@ export default function Login() {
     );
   }
 
+  const [isSignUp, setIsSignUp] = useState(false);
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-maroon-50 to-maroon-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gray-800 flex items-center justify-center p-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="w-full max-w-md"
+        className="w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden"
       >
-        <Card className="backdrop-blur-sm bg-white/95 shadow-xl border-0">
-          <CardHeader className="text-center space-y-4">
-            <Button
-              onClick={() => setAuthMode("social")}
-              variant="ghost"
-              size="sm"
-              className="absolute top-4 left-4 text-gray-500"
-            >
-              ← Back
-            </Button>
-            
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ delay: 0.2, duration: 0.3 }}
-              className="mx-auto w-20 h-20 mb-4"
-            >
-              <img 
-                src="/logo.png" 
-                alt="UB FoodHub Logo" 
-                className="w-full h-full object-contain"
-              />
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.4, duration: 0.3 }}
-            >
-              <CardTitle className="text-2xl font-bold text-maroon-800">
-                Email Sign In
-              </CardTitle>
-              <p className="text-maroon-600 text-sm mt-2">
-                Enter your email and password
-              </p>
-            </motion.div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-6">
-              {/* Login Form */}
-              <form onSubmit={handleEmailLogin} className="space-y-4">
-                <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.1 }}
-                  className="space-y-2"
-                >
+        {/* Header with Logo */}
+        <div className="bg-gradient-to-br from-maroon-600 via-maroon-700 to-maroon-800 px-6 py-8 text-center relative">
+          <Button
+            onClick={() => setAuthMode("social")}
+            variant="ghost"
+            size="sm"
+            className="absolute top-4 left-4 text-maroon-100 hover:text-white hover:bg-maroon-600/20"
+          >
+            ← Back
+          </Button>
+          
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ delay: 0.2, duration: 0.3 }}
+            className="w-16 h-16 mx-auto mb-4 bg-maroon-500 rounded-2xl flex items-center justify-center"
+          >
+            <img 
+              src="/logo.png" 
+              alt="UB FoodHub Logo" 
+              className="w-12 h-12 object-contain"
+            />
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4, duration: 0.3 }}
+          >
+            <h2 className="text-xl font-bold text-white">
+              {isSignUp ? "Create Account" : "Welcome Back"}
+            </h2>
+            <p className="text-maroon-100 text-sm mt-1">
+              {isSignUp ? "Join UB FoodHub today" : "Sign in to your account"}
+            </p>
+          </motion.div>
+        </div>
+
+        <div className="px-6 py-8">
+          <AnimatePresence mode="wait">
+            {!isSignUp ? (
+              <motion.form
+                key="signin"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                onSubmit={handleEmailLogin}
+                className="space-y-4"
+              >
+                <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
@@ -388,21 +387,16 @@ export default function Login() {
                       id="email"
                       type="email"
                       placeholder="Enter your email"
-                      className="pl-10"
+                      className="pl-10 border-gray-200 focus:border-maroon-500"
                       value={loginData.email}
                       onChange={(e) => setLoginData(prev => ({ ...prev, email: e.target.value }))}
                       required
                       disabled={isLoading}
                     />
                   </div>
-                </motion.div>
+                </div>
                 
-                <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.2 }}
-                  className="space-y-2"
-                >
+                <div className="space-y-2">
                   <Label htmlFor="password">Password</Label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
@@ -410,7 +404,7 @@ export default function Login() {
                       id="password"
                       type={showPassword ? "text" : "password"}
                       placeholder="Enter your password"
-                      className="pl-10 pr-10"
+                      className="pl-10 pr-10 border-gray-200 focus:border-maroon-500"
                       value={loginData.password}
                       onChange={(e) => setLoginData(prev => ({ ...prev, password: e.target.value }))}
                       required
@@ -425,205 +419,169 @@ export default function Login() {
                       {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
                   </div>
-                </motion.div>
+                </div>
                 
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3 }}
+                <Button 
+                  type="submit" 
+                  className="w-full bg-maroon-600 hover:bg-maroon-700 text-white py-3 rounded-xl"
+                  disabled={isLoading}
                 >
-                  <Button 
-                    type="submit" 
-                    className="w-full bg-maroon-600 hover:bg-maroon-700 transition-colors"
+                  {isLoading ? (
+                    <div className="flex items-center space-x-2">
+                      <Spinner size="sm" />
+                      <span>Signing in...</span>
+                    </div>
+                  ) : (
+                    "Sign In"
+                  )}
+                </Button>
+
+                <div className="text-center pt-4">
+                  <p className="text-gray-600 text-sm">
+                    No account?{" "}
+                    <button
+                      type="button"
+                      onClick={() => setIsSignUp(true)}
+                      className="text-maroon-600 hover:text-maroon-700 font-medium"
+                      disabled={isLoading}
+                    >
+                      Sign up
+                    </button>
+                  </p>
+                </div>
+              </motion.form>
+            ) : (
+              <motion.form
+                key="signup"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                onSubmit={handleEmailRegister}
+                className="space-y-4"
+              >
+                <div className="space-y-2">
+                  <Label htmlFor="fullName">Full Name</Label>
+                  <div className="relative">
+                    <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                    <Input
+                      id="fullName"
+                      placeholder="Enter your full name"
+                      className="pl-10 border-gray-200 focus:border-maroon-500"
+                      value={registerData.fullName}
+                      onChange={(e) => setRegisterData(prev => ({ ...prev, fullName: e.target.value }))}
+                      required
+                      disabled={isLoading}
+                    />
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="registerEmail">Email</Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                    <Input
+                      id="registerEmail"
+                      type="email"
+                      placeholder="Enter your email"
+                      className="pl-10 border-gray-200 focus:border-maroon-500"
+                      value={registerData.email}
+                      onChange={(e) => setRegisterData(prev => ({ ...prev, email: e.target.value }))}
+                      required
+                      disabled={isLoading}
+                    />
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="registerPassword">Password</Label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                    <Input
+                      id="registerPassword"
+                      type={showRegisterPassword ? "text" : "password"}
+                      placeholder="Create a password (min. 6 characters)"
+                      className="pl-10 pr-10 border-gray-200 focus:border-maroon-500"
+                      value={registerData.password}
+                      onChange={(e) => setRegisterData(prev => ({ ...prev, password: e.target.value }))}
+                      required
+                      disabled={isLoading}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowRegisterPassword(!showRegisterPassword)}
+                      className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                      disabled={isLoading}
+                    >
+                      {showRegisterPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="studentId">Student ID (Optional)</Label>
+                  <div className="relative">
+                    <GraduationCap className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                    <Input
+                      id="studentId"
+                      placeholder="Enter your student ID"
+                      className="pl-10 border-gray-200 focus:border-maroon-500"
+                      value={registerData.studentId}
+                      onChange={(e) => setRegisterData(prev => ({ ...prev, studentId: e.target.value }))}
+                      disabled={isLoading}
+                    />
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="role">Role</Label>
+                  <Select 
+                    value={registerData.role} 
+                    onValueChange={(value) => setRegisterData(prev => ({ ...prev, role: value }))}
                     disabled={isLoading}
                   >
-                    <AnimatePresence mode="wait">
-                      {isLoading ? (
-                        <motion.div
-                          key="loading"
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          exit={{ opacity: 0 }}
-                          className="flex items-center space-x-2"
-                        >
-                          <Spinner size="sm" />
-                          <span>Signing in...</span>
-                        </motion.div>
-                      ) : (
-                        <motion.span
-                          key="sign-in"
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          exit={{ opacity: 0 }}
-                        >
-                          Sign In
-                        </motion.span>
-                      )}
-                    </AnimatePresence>
-                  </Button>
-                </motion.div>
-              </form>
+                    <SelectTrigger className="border-gray-200 focus:border-maroon-500">
+                      <SelectValue placeholder="Select your role" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="student">Student</SelectItem>
+                      <SelectItem value="stall_owner">Stall Owner</SelectItem>
+                      <SelectItem value="admin">Admin</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <Button 
+                  type="submit" 
+                  className="w-full bg-maroon-600 hover:bg-maroon-700 text-white py-3 rounded-xl"
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <div className="flex items-center space-x-2">
+                      <Spinner size="sm" />
+                      <span>Creating account...</span>
+                    </div>
+                  ) : (
+                    "Create Account"
+                  )}
+                </Button>
 
-              {/* Register Form */}
-              <div className="border-t pt-6">
-                <h3 className="text-lg font-semibold text-center mb-4">Or create new account</h3>
-                <form onSubmit={handleEmailRegister} className="space-y-4">
-                  <motion.div
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.4 }}
-                    className="space-y-2"
-                  >
-                    <Label htmlFor="fullName">Full Name</Label>
-                    <div className="relative">
-                      <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                      <Input
-                        id="fullName"
-                        placeholder="Enter your full name"
-                        className="pl-10"
-                        value={registerData.fullName}
-                        onChange={(e) => setRegisterData(prev => ({ ...prev, fullName: e.target.value }))}
-                        required
-                        disabled={isLoading}
-                      />
-                    </div>
-                  </motion.div>
-                  
-                  <motion.div
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.5 }}
-                    className="space-y-2"
-                  >
-                    <Label htmlFor="registerEmail">Email</Label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                      <Input
-                        id="registerEmail"
-                        type="email"
-                        placeholder="Enter your email"
-                        className="pl-10"
-                        value={registerData.email}
-                        onChange={(e) => setRegisterData(prev => ({ ...prev, email: e.target.value }))}
-                        required
-                        disabled={isLoading}
-                      />
-                    </div>
-                  </motion.div>
-                  
-                  <motion.div
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.6 }}
-                    className="space-y-2"
-                  >
-                    <Label htmlFor="registerPassword">Password</Label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                      <Input
-                        id="registerPassword"
-                        type={showRegisterPassword ? "text" : "password"}
-                        placeholder="Create a password (min. 6 characters)"
-                        className="pl-10 pr-10"
-                        value={registerData.password}
-                        onChange={(e) => setRegisterData(prev => ({ ...prev, password: e.target.value }))}
-                        required
-                        disabled={isLoading}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowRegisterPassword(!showRegisterPassword)}
-                        className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
-                        disabled={isLoading}
-                      >
-                        {showRegisterPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </button>
-                    </div>
-                  </motion.div>
-                  
-                  <motion.div
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.7 }}
-                    className="space-y-2"
-                  >
-                    <Label htmlFor="studentId">Student ID (Optional)</Label>
-                    <div className="relative">
-                      <GraduationCap className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                      <Input
-                        id="studentId"
-                        placeholder="Enter your student ID"
-                        className="pl-10"
-                        value={registerData.studentId}
-                        onChange={(e) => setRegisterData(prev => ({ ...prev, studentId: e.target.value }))}
-                        disabled={isLoading}
-                      />
-                    </div>
-                  </motion.div>
-                  
-                  <motion.div
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.8 }}
-                    className="space-y-2"
-                  >
-                    <Label htmlFor="role">Role</Label>
-                    <Select 
-                      value={registerData.role} 
-                      onValueChange={(value) => setRegisterData(prev => ({ ...prev, role: value }))}
+                <div className="text-center pt-4">
+                  <p className="text-gray-600 text-sm">
+                    Already have an account?{" "}
+                    <button
+                      type="button"
+                      onClick={() => setIsSignUp(false)}
+                      className="text-maroon-600 hover:text-maroon-700 font-medium"
                       disabled={isLoading}
                     >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select your role" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="student">Student</SelectItem>
-                        <SelectItem value="stall_owner">Stall Owner</SelectItem>
-                        <SelectItem value="admin">Admin</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </motion.div>
-                  
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.9 }}
-                  >
-                    <Button 
-                      type="submit" 
-                      className="w-full bg-maroon-600 hover:bg-maroon-700 transition-colors"
-                      disabled={isLoading}
-                    >
-                      <AnimatePresence mode="wait">
-                        {isLoading ? (
-                          <motion.div
-                            key="loading"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            className="flex items-center space-x-2"
-                          >
-                            <Spinner size="sm" />
-                            <span>Creating account...</span>
-                          </motion.div>
-                        ) : (
-                          <motion.span
-                            key="create"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                          >
-                            Create Account
-                          </motion.span>
-                        )}
-                      </AnimatePresence>
-                    </Button>
-                  </motion.div>
-                </form>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+                      Sign in
+                    </button>
+                  </p>
+                </div>
+              </motion.form>
+            )}
+          </AnimatePresence>
+        </div>
       </motion.div>
     </div>
   );
