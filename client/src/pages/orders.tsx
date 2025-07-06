@@ -1,176 +1,125 @@
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Clock, CheckCircle, Package, Truck } from "lucide-react";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ArrowLeft, Clock, CheckCircle, XCircle, AlertCircle, QrCode, MapPin, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useLocation } from "wouter";
 import { useStore } from "@/lib/store";
+import { useToast } from "@/hooks/use-toast";
+import { subscribeToQuery, updateDocument, deleteDocument } from "@/lib/firebase";
 import BottomNav from "@/components/layout/bottom-nav";
 import QRCode from "@/components/qr-code";
-import type { OrderWithDetails } from "@/types";
+
+const orderStatusConfig = {
+  pending: {
+    color: "bg-yellow-100 text-yellow-800 border-yellow-200",
+    icon: <Clock className="w-4 h-4" />,
+    label: "Order confirmed",
+    description: "Your order is being prepared"
+  },
+  preparing: {
+    color: "bg-blue-100 text-blue-800 border-blue-200",
+    icon: <Clock className="w-4 h-4" />,
+    label: "Preparing",
+    description: "Chef is cooking your order"
+  },
+  ready: {
+    color: "bg-green-100 text-green-800 border-green-200",
+    icon: <CheckCircle className="w-4 h-4" />,
+    label: "Ready for pickup",
+    description: "Your order is ready!"
+  },
+  completed: {
+    color: "bg-green-100 text-green-800 border-green-200",
+    icon: <CheckCircle className="w-4 h-4" />,
+    label: "Completed",
+    description: "Order delivered successfully"
+  },
+  cancelled: {
+    color: "bg-red-100 text-red-800 border-red-200",
+    icon: <XCircle className="w-4 h-4" />,
+    label: "Cancelled",
+    description: "Order was cancelled"
+  }
+};
 
 export default function Orders() {
   const [, setLocation] = useLocation();
-  const [selectedOrder, setSelectedOrder] = useState<OrderWithDetails | null>(null);
   const { state } = useStore();
+  const { toast } = useToast();
+  const [orders, setOrders] = useState<any[]>([]);
+  const [selectedOrder, setSelectedOrder] = useState<any>(null);
+  const [showQRDialog, setShowQRDialog] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const { data: orders, isLoading } = useQuery({
-    queryKey: [`/api/orders/${state.user?.id}`],
-    enabled: !!state.user?.id,
-  });
+  useEffect(() => {
+    if (state.user?.id) {
+      const unsubscribe = subscribeToQuery("orders", "userId", "==", state.user.id, (fetchedOrders) => {
+        // Sort orders by creation date, newest first
+        const sortedOrders = fetchedOrders.sort((a, b) => 
+          new Date(b.createdAt?.seconds * 1000 || Date.now()).getTime() - 
+          new Date(a.createdAt?.seconds * 1000 || Date.now()).getTime()
+        );
+        setOrders(sortedOrders);
+      });
+      return () => unsubscribe();
+    }
+  }, [state.user?.id]);
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "pending":
-        return <Clock className="h-4 w-4 text-yellow-500" />;
-      case "preparing":
-        return <Package className="h-4 w-4 text-blue-500" />;
-      case "ready":
-        return <CheckCircle className="h-4 w-4 text-green-500" />;
-      case "completed":
-        return <CheckCircle className="h-4 w-4 text-gray-500" />;
-      default:
-        return <Clock className="h-4 w-4 text-gray-400" />;
+  const cancelOrder = async (orderId: string) => {
+    if (!orderId) return;
+
+    setIsLoading(true);
+    try {
+      await updateDocument("orders", orderId, { 
+        status: "cancelled",
+        cancelledAt: new Date()
+      });
+      
+      toast({
+        title: "Order cancelled",
+        description: "Your order has been successfully cancelled.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to cancel order. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "pending":
-        return "bg-yellow-100 text-yellow-800";
-      case "preparing":
-        return "bg-blue-100 text-blue-800";
-      case "ready":
-        return "bg-green-100 text-green-800";
-      case "completed":
-        return "bg-gray-100 text-gray-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
+  const showQRCode = (order: any) => {
+    setSelectedOrder(order);
+    setShowQRDialog(true);
   };
 
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case "pending":
-        return "Order Confirmed";
-      case "preparing":
-        return "Preparing";
-      case "ready":
-        return "Ready for Pickup";
-      case "completed":
-        return "Completed";
-      default:
-        return "Unknown";
-    }
-  };
-
-  if (isLoading) {
+  if (orders.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <div className="animate-pulse p-4">
-          <div className="h-6 bg-gray-200 rounded mb-4"></div>
-          <div className="space-y-4">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="bg-white rounded-lg p-4">
-                <div className="h-4 bg-gray-200 rounded mb-2"></div>
-                <div className="h-3 bg-gray-200 rounded w-2/3"></div>
-              </div>
-            ))}
+        <div className="bg-white shadow-sm sticky top-0 z-40">
+          <div className="flex items-center p-4">
+            <Button variant="ghost" size="icon" onClick={() => setLocation("/")} className="mr-3">
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
+            <h1 className="text-lg font-semibold">My Orders</h1>
           </div>
         </div>
-      </div>
-    );
-  }
-
-  if (selectedOrder) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        {/* Header */}
-        <header className="bg-white shadow-sm border-b p-4">
-          <div className="flex items-center">
-            <button
-              onClick={() => setSelectedOrder(null)}
-              className="mr-4 p-2 hover:bg-gray-100 rounded-full"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </button>
-            <h1 className="text-lg font-semibold">Order Tracking</h1>
-          </div>
-        </header>
-
-        <div className="p-4 space-y-6">
-          {/* Order Status */}
-          <div className="text-center">
-            <div className="w-16 h-16 bg-maroon-100 rounded-full flex items-center justify-center mx-auto mb-3">
-              <Package className="h-8 w-8 text-maroon-600" />
-            </div>
-            <h3 className="text-lg font-semibold text-gray-800 mb-1">
-              {getStatusText(selectedOrder.status)}
-            </h3>
-            <p className="text-sm text-gray-600">
-              {selectedOrder.status === "preparing" && "Your order is being prepared"}
-              {selectedOrder.status === "ready" && "Your order is ready for pickup"}
-              {selectedOrder.status === "completed" && "Your order has been completed"}
-            </p>
-            <p className="text-sm text-maroon-600 font-medium mt-2">
-              Estimated time: {selectedOrder.estimatedTime || "15-20 minutes"}
-            </p>
-          </div>
-
-          {/* Order Details */}
-          <Card>
-            <CardContent className="pt-6">
-              <h4 className="font-medium text-gray-800 mb-2">Order #{selectedOrder.qrCode}</h4>
-              <div className="text-sm text-gray-600">
-                <p>{selectedOrder.restaurant?.name}</p>
-                <p>{selectedOrder.items?.length} items • ₱{selectedOrder.totalAmount}</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Order Items */}
-          <Card>
-            <CardContent className="pt-6">
-              <h4 className="font-medium text-gray-800 mb-3">Items</h4>
-              <div className="space-y-3">
-                {selectedOrder.items?.map((item) => (
-                  <div key={item.id} className="flex justify-between items-center">
-                    <div className="flex-1">
-                      <p className="font-medium text-sm">{item.menuItem?.name}</p>
-                      <p className="text-xs text-gray-600">Qty: {item.quantity}</p>
-                    </div>
-                    <p className="font-medium text-sm">₱{item.price}</p>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* QR Code */}
-          <Card>
-            <CardContent className="pt-6">
-              <div className="text-center">
-                <QRCode value={selectedOrder.qrCode || ""} size={128} />
-                <p className="text-sm text-gray-600 mt-2">
-                  Show this QR code for pickup
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Contact Buttons */}
-          <div className="flex space-x-2">
-            <Button variant="outline" className="flex-1">
-              <span className="mr-2">📞</span>
-              Call Stall
-            </Button>
-            <Button className="flex-1 bg-maroon-600 hover:bg-maroon-700">
-              <span className="mr-2">💬</span>
-              Message
-            </Button>
-          </div>
+        
+        <div className="flex flex-col items-center justify-center min-h-[60vh] p-8">
+          <div className="text-6xl mb-4">📦</div>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">No orders yet</h2>
+          <p className="text-gray-600 text-center mb-6">When you place an order, it will appear here</p>
+          <Button onClick={() => setLocation("/")} className="bg-maroon-600 hover:bg-maroon-700">
+            Start Ordering
+          </Button>
         </div>
+        
+        <BottomNav />
       </div>
     );
   }
@@ -178,82 +127,208 @@ export default function Orders() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b p-4">
-        <div className="flex items-center">
-          <button
-            onClick={() => setLocation("/")}
-            className="mr-4 p-2 hover:bg-gray-100 rounded-full"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </button>
-          <h1 className="text-lg font-semibold">Your Orders</h1>
+      <motion.div 
+        initial={{ y: -50 }}
+        animate={{ y: 0 }}
+        className="bg-white shadow-sm sticky top-0 z-40"
+      >
+        <div className="flex items-center p-4">
+          <Button variant="ghost" size="icon" onClick={() => setLocation("/")} className="mr-3">
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+          <h1 className="text-lg font-semibold">My Orders</h1>
         </div>
-      </header>
+      </motion.div>
 
-      {/* Orders List */}
-      <div className="p-4 space-y-4 pb-20">
-        {orders?.length === 0 ? (
-          <div className="text-center py-20">
-            <div className="text-6xl mb-4">📋</div>
-            <h2 className="text-xl font-semibold text-gray-800 mb-2">No orders yet</h2>
-            <p className="text-gray-600 mb-6">
-              When you place an order, you'll see it here
-            </p>
-            <Button
-              onClick={() => setLocation("/")}
-              className="bg-maroon-600 hover:bg-maroon-700"
-            >
-              Browse Restaurants
-            </Button>
-          </div>
-        ) : (
-          <>
-            <h2 className="font-semibold text-gray-800 mb-4">Recent Orders</h2>
-            {orders?.map((order: OrderWithDetails) => (
-              <Card
+      <div className="p-4 space-y-4 pb-24">
+        <AnimatePresence>
+          {orders.map((order, index) => {
+            const statusConfig = orderStatusConfig[order.status as keyof typeof orderStatusConfig] || orderStatusConfig.pending;
+            const canCancel = order.status === 'pending' || order.status === 'preparing';
+            
+            return (
+              <motion.div
                 key={order.id}
-                className="cursor-pointer hover:shadow-md transition-shadow"
-                onClick={() => setSelectedOrder(order)}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ delay: index * 0.1 }}
+                className="bg-white rounded-lg p-4 shadow-sm"
               >
-                <CardContent className="pt-6">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center space-x-2">
-                      {getStatusIcon(order.status)}
-                      <Badge className={getStatusColor(order.status)}>
-                        {getStatusText(order.status)}
-                      </Badge>
-                    </div>
-                    <span className="text-sm text-gray-500">
-                      {new Date(order.createdAt).toLocaleDateString()}
-                    </span>
-                  </div>
-                  
-                  <div className="mb-3">
-                    <h3 className="font-medium text-gray-800">{order.restaurant?.name}</h3>
+                {/* Order Header */}
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <h3 className="font-semibold text-gray-900">Order {order.qrCode}</h3>
                     <p className="text-sm text-gray-600">
-                      Order #{order.qrCode} • {order.items?.length} items
+                      {order.createdAt ? 
+                        new Date(order.createdAt.seconds * 1000).toLocaleDateString('en-US', {
+                          month: 'short',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        }) : 
+                        'Just now'
+                      }
                     </p>
                   </div>
+                  <Badge className={`${statusConfig.color} flex items-center gap-1`}>
+                    {statusConfig.icon}
+                    {statusConfig.label}
+                  </Badge>
+                </div>
+
+                {/* Status Timeline */}
+                <div className="mb-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className={`w-3 h-3 rounded-full ${order.status === 'cancelled' ? 'bg-red-500' : 'bg-green-500'}`}></div>
+                    <span className="font-medium text-sm">{statusConfig.description}</span>
+                  </div>
                   
-                  <div className="flex items-center justify-between">
-                    <span className="font-semibold text-maroon-600">₱{order.totalAmount}</span>
+                  {order.status === 'ready' && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="bg-green-50 border border-green-200 rounded-lg p-3 mt-2"
+                    >
+                      <div className="flex items-center gap-2 text-green-800">
+                        <CheckCircle className="w-4 h-4" />
+                        <span className="font-medium text-sm">Ready for pickup!</span>
+                      </div>
+                      <p className="text-xs text-green-700 mt-1">Show QR code to the stall owner for pickup</p>
+                    </motion.div>
+                  )}
+
+                  {order.status === 'pending' && (
+                    <div className="text-xs text-gray-600">
+                      Estimated time: {order.estimatedTime || "25-40 mins"}
+                    </div>
+                  )}
+                </div>
+
+                {/* Order Items */}
+                <div className="border-t pt-3 mb-4">
+                  <div className="space-y-1">
+                    {order.items?.map((item: any, idx: number) => (
+                      <div key={idx} className="flex justify-between text-sm">
+                        <span>{item.quantity}x {item.name || `Item ${idx + 1}`}</span>
+                        <span>₱{(item.price * item.quantity).toFixed(2)}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex justify-between font-semibold text-sm mt-2 pt-2 border-t">
+                    <span>Total</span>
+                    <span>₱{order.totalAmount?.toFixed(2)}</span>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex gap-2">
+                  {order.status === 'ready' || order.status === 'preparing' ? (
+                    <Button
+                      onClick={() => showQRCode(order)}
+                      className="flex-1 bg-maroon-600 hover:bg-maroon-700 text-white"
+                    >
+                      <QrCode className="w-4 h-4 mr-2" />
+                      Show QR Code
+                    </Button>
+                  ) : null}
+                  
+                  {canCancel && (
                     <Button
                       variant="outline"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedOrder(order);
-                      }}
+                      onClick={() => cancelOrder(order.id)}
+                      disabled={isLoading}
+                      className="text-red-600 border-red-200 hover:bg-red-50"
                     >
-                      View Details
+                      Cancel Order
                     </Button>
+                  )}
+                  
+                  {order.status === 'completed' && (
+                    <Button
+                      variant="outline"
+                      onClick={() => setLocation(`/restaurant/${order.stallId}`)}
+                      className="flex-1"
+                    >
+                      Reorder
+                    </Button>
+                  )}
+                </div>
+
+                {/* Special Instructions */}
+                {order.specialInstructions && (
+                  <div className="mt-3 p-2 bg-gray-50 rounded text-xs">
+                    <span className="font-medium">Special instructions: </span>
+                    {order.specialInstructions}
                   </div>
-                </CardContent>
-              </Card>
-            ))}
-          </>
-        )}
+                )}
+              </motion.div>
+            );
+          })}
+        </AnimatePresence>
       </div>
+
+      {/* QR Code Dialog */}
+      <Dialog open={showQRDialog} onOpenChange={setShowQRDialog}>
+        <DialogContent className="max-w-sm mx-auto">
+          {selectedOrder && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="text-center space-y-4"
+            >
+              <DialogHeader>
+                <DialogTitle>Order QR Code</DialogTitle>
+              </DialogHeader>
+              
+              <div className="space-y-4">
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h3 className="font-semibold text-lg mb-1">Order {selectedOrder.qrCode}</h3>
+                  <p className="text-sm text-gray-600">Show this QR code for pickup</p>
+                </div>
+
+                <div className="flex justify-center bg-white p-6 rounded-lg border">
+                  <QRCode value={selectedOrder.qrCode} size={200} />
+                </div>
+
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                  <div className="flex items-center gap-2 text-blue-800">
+                    <AlertCircle className="w-4 h-4" />
+                    <span className="font-medium text-sm">Pickup Instructions</span>
+                  </div>
+                  <p className="text-xs text-blue-700 mt-1">
+                    Present this QR code to the stall owner when collecting your order.
+                  </p>
+                </div>
+
+                <div className="text-xs text-gray-600 space-y-1">
+                  <div className="flex justify-between">
+                    <span>Order Total:</span>
+                    <span className="font-medium">₱{selectedOrder.totalAmount?.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Status:</span>
+                    <span className="font-medium capitalize">{selectedOrder.status}</span>
+                  </div>
+                  {selectedOrder.estimatedTime && (
+                    <div className="flex justify-between">
+                      <span>Est. Time:</span>
+                      <span className="font-medium">{selectedOrder.estimatedTime}</span>
+                    </div>
+                  )}
+                </div>
+
+                <Button
+                  onClick={() => setShowQRDialog(false)}
+                  className="w-full"
+                >
+                  Close
+                </Button>
+              </div>
+            </motion.div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       <BottomNav />
     </div>

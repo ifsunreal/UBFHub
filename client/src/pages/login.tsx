@@ -10,6 +10,8 @@ import { useStore } from "@/lib/store";
 import { useToast } from "@/hooks/use-toast";
 import { User, Mail, Lock, GraduationCap } from "lucide-react";
 import { signIn, signUp, createDocument, getDocument, onAuthStateChange } from "@/lib/firebase";
+import { createInitialAccounts } from "@/lib/create-admin-accounts";
+import { motion } from "framer-motion";
 import ubLogo from "@assets/ub foodhub logo2_1751779151057.png";
 
 export default function Login() {
@@ -33,8 +35,11 @@ export default function Login() {
     role: "student",
   });
 
-  // Check for existing user authentication
+  // Check for existing user authentication and create initial accounts
   useEffect(() => {
+    // Create initial accounts on first load
+    createInitialAccounts();
+
     const unsubscribe = onAuthStateChange(async (firebaseUser) => {
       if (firebaseUser) {
         try {
@@ -67,6 +72,36 @@ export default function Login() {
     setIsLoading(true);
     
     try {
+      // Handle specific admin accounts
+      if (loginData.email === "admin@foodhub.com" && loginData.password === "admin123") {
+        const userData = {
+          id: "admin-account-001",
+          email: "admin@foodhub.com",
+          fullName: "System Administrator",
+          role: "admin",
+          loyaltyPoints: 0,
+        };
+        dispatch({ type: "SET_USER", payload: userData });
+        toast({ title: "Welcome Admin!", description: "Successfully logged in as administrator." });
+        setLocation("/admin");
+        return;
+      }
+      
+      if (loginData.email === "canteen@foodhub.com" && loginData.password === "stall123") {
+        const userData = {
+          id: "stall-owner-001",
+          email: "canteen@foodhub.com",
+          fullName: "Food Stall Owner",
+          role: "stall_owner",
+          loyaltyPoints: 0,
+        };
+        dispatch({ type: "SET_USER", payload: userData });
+        toast({ title: "Welcome Stall Owner!", description: "Successfully logged in to manage your stall." });
+        setLocation("/stall-dashboard");
+        return;
+      }
+
+      // For other users, use Firebase authentication
       const userCredential = await signIn(loginData.email, loginData.password);
       const userDoc = await getDocument("users", userCredential.user.uid);
       
@@ -150,23 +185,72 @@ export default function Login() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-maroon-500 to-maroon-700 flex items-center justify-center p-4">
-      <div className="w-full max-w-md space-y-6">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="w-full max-w-md space-y-6"
+      >
         {/* Logo */}
-        <div className="text-center">
+        <motion.div 
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ delay: 0.2, type: "spring", stiffness: 100 }}
+          className="text-center"
+        >
           <img src={ubLogo} alt="UB FoodHub" className="w-24 h-24 mx-auto mb-4 rounded-full shadow-lg" />
           <h1 className="text-3xl font-bold text-white mb-2">UB FoodHub</h1>
           <p className="text-maroon-100">University of Batangas Food Ordering System</p>
-        </div>
+          
+          {/* Quick Login Buttons */}
+          <div className="mt-4 space-y-2">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4 }}
+              className="text-xs text-maroon-100"
+            >
+              Quick Login:
+            </motion.div>
+            <div className="flex gap-2 justify-center">
+              <Button
+                size="sm"
+                variant="outline"
+                className="text-xs bg-white/10 border-white/20 text-white hover:bg-white/20"
+                onClick={() => {
+                  setLoginData({ email: "admin@foodhub.com", password: "admin123" });
+                }}
+              >
+                Admin
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="text-xs bg-white/10 border-white/20 text-white hover:bg-white/20"
+                onClick={() => {
+                  setLoginData({ email: "canteen@foodhub.com", password: "stall123" });
+                }}
+              >
+                Stall Owner
+              </Button>
+            </div>
+          </div>
+        </motion.div>
 
-        <Tabs defaultValue="login" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 bg-white/10 backdrop-blur-sm">
-            <TabsTrigger value="login" className="data-[state=active]:bg-white data-[state=active]:text-maroon-700">
-              Login
-            </TabsTrigger>
-            <TabsTrigger value="register" className="data-[state=active]:bg-white data-[state=active]:text-maroon-700">
-              Register
-            </TabsTrigger>
-          </TabsList>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
+        >
+          <Tabs defaultValue="login" className="w-full">
+            <TabsList className="grid w-full grid-cols-2 bg-white/10 backdrop-blur-sm">
+              <TabsTrigger value="login" className="data-[state=active]:bg-white data-[state=active]:text-maroon-700">
+                Login
+              </TabsTrigger>
+              <TabsTrigger value="register" className="data-[state=active]:bg-white data-[state=active]:text-maroon-700">
+                Register
+              </TabsTrigger>
+            </TabsList>
 
           <TabsContent value="login">
             <Card className="bg-white/95 backdrop-blur-sm border-0 shadow-xl">
@@ -316,8 +400,9 @@ export default function Login() {
               </CardContent>
             </Card>
           </TabsContent>
-        </Tabs>
-      </div>
+          </Tabs>
+        </motion.div>
+      </motion.div>
     </div>
   );
 }
