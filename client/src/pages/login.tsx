@@ -228,14 +228,14 @@ export default function Login() {
 
   if (authMode === "social") {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-pink-400 via-pink-500 to-pink-600 flex flex-col">
+      <div className="min-h-screen bg-gradient-to-br from-maroon-600 via-maroon-700 to-maroon-800 flex flex-col">
         {/* Hero Section with Logo and Illustration */}
-        <div className="flex-1 flex flex-col items-center justify-center px-6 py-12 relative">
+        <div className="flex-1 flex flex-col items-center justify-center px-4 py-8 relative min-h-0">
           <motion.div
             initial={{ scale: 0, rotate: -180 }}
             animate={{ scale: 1, rotate: 0 }}
             transition={{ delay: 0.3, duration: 0.6, type: "spring" }}
-            className="w-32 h-32 mb-8"
+            className="w-24 h-24 mb-6"
           >
             <img 
               src="/logo.png" 
@@ -248,9 +248,9 @@ export default function Login() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6, duration: 0.5 }}
-            className="text-center mb-12"
+            className="text-center mb-8"
           >
-            <p className="text-white text-lg font-medium opacity-80">Your campus dining companion</p>
+            <p className="text-maroon-100 text-lg font-medium">Your campus dining companion</p>
           </motion.div>
         </div>
 
@@ -259,7 +259,7 @@ export default function Login() {
           initial={{ y: 100, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.4, duration: 0.6 }}
-          className="bg-white rounded-t-3xl px-6 py-8 shadow-2xl"
+          className="bg-white rounded-t-3xl px-6 py-6 shadow-2xl max-h-[60vh] overflow-y-auto"
         >
           <motion.div
             initial={{ opacity: 0 }}
@@ -322,14 +322,14 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-400 via-pink-500 to-pink-600 flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-maroon-600 via-maroon-700 to-maroon-800 flex flex-col">
       {/* Header with Logo */}
-      <div className="flex-1 flex flex-col items-center justify-center px-6 py-12 relative">
+      <div className="flex-1 flex flex-col items-center justify-center px-4 py-8 relative min-h-0">
         <Button
           onClick={() => setAuthMode("social")}
           variant="ghost"
           size="sm"
-          className="absolute top-8 left-8 text-white hover:text-pink-100 hover:bg-white/10"
+          className="absolute top-4 left-4 text-maroon-100 hover:text-white hover:bg-white/10"
         >
           ← Back
         </Button>
@@ -338,12 +338,12 @@ export default function Login() {
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ delay: 0.2, duration: 0.3 }}
-          className="w-24 h-24 mx-auto mb-6 bg-maroon-600 rounded-2xl flex items-center justify-center shadow-xl"
+          className="w-20 h-20 mx-auto mb-4 bg-maroon-500 rounded-2xl flex items-center justify-center shadow-xl"
         >
           <img 
             src="/logo.png" 
             alt="UB FoodHub Logo" 
-            className="w-16 h-16 object-contain"
+            className="w-14 h-14 object-contain"
           />
         </motion.div>
         <motion.div
@@ -352,10 +352,10 @@ export default function Login() {
           transition={{ delay: 0.4, duration: 0.3 }}
           className="text-center"
         >
-          <h2 className="text-2xl font-bold text-white mb-2">
+          <h2 className="text-xl font-bold text-white mb-2">
             {isSignUp ? "Create Account" : "Welcome Back"}
           </h2>
-          <p className="text-white/80 text-lg">
+          <p className="text-maroon-100 text-sm">
             {isSignUp ? "Join UB FoodHub today" : "Sign in to your account"}
           </p>
         </motion.div>
@@ -366,7 +366,7 @@ export default function Login() {
         initial={{ y: 100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.4, duration: 0.6 }}
-        className="bg-white rounded-t-3xl px-6 py-8 shadow-2xl"
+        className="bg-white rounded-t-3xl px-6 py-6 shadow-2xl max-h-[65vh] overflow-y-auto"
       >
         <AnimatePresence mode="wait">
           {!isSignUp ? (
@@ -376,9 +376,9 @@ export default function Login() {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
               onSubmit={handleEmailLogin}
-              className="space-y-6"
+              className="space-y-4"
             >
-              <div className="space-y-4">
+              <div className="space-y-3">
                 <div className="space-y-2">
                   <Label htmlFor="email" className="text-gray-700 font-medium">Email</Label>
                   <div className="relative">
@@ -387,7 +387,7 @@ export default function Login() {
                       id="email"
                       type="email"
                       placeholder="Enter your email"
-                      className="pl-10 border-gray-200 focus:border-maroon-500 py-3"
+                      className="pl-10 border-gray-200 focus:border-maroon-500 h-12"
                       value={loginData.email}
                       onChange={(e) => setLoginData(prev => ({ ...prev, email: e.target.value }))}
                       required
@@ -404,7 +404,7 @@ export default function Login() {
                       id="password"
                       type={showPassword ? "text" : "password"}
                       placeholder="Enter your password"
-                      className="pl-10 pr-10 border-gray-200 focus:border-maroon-500 py-3"
+                      className="pl-10 pr-10 border-gray-200 focus:border-maroon-500 h-12"
                       value={loginData.password}
                       onChange={(e) => setLoginData(prev => ({ ...prev, password: e.target.value }))}
                       required
@@ -424,7 +424,7 @@ export default function Login() {
               
               <Button 
                 type="submit" 
-                className="w-full bg-maroon-600 hover:bg-maroon-700 text-white py-4 rounded-xl text-lg font-medium"
+                className="w-full bg-maroon-600 hover:bg-maroon-700 text-white h-12 rounded-xl font-medium"
                 disabled={isLoading}
               >
                 {isLoading ? (
@@ -437,7 +437,7 @@ export default function Login() {
                 )}
               </Button>
 
-              <div className="text-center pt-4">
+              <div className="text-center pt-2">
                 <p className="text-gray-600">
                   No account?{" "}
                   <button
@@ -458,9 +458,9 @@ export default function Login() {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 20 }}
               onSubmit={handleEmailRegister}
-              className="space-y-6"
+              className="space-y-4"
             >
-              <div className="space-y-4">
+              <div className="space-y-3">
                 <div className="space-y-2">
                   <Label htmlFor="fullName" className="text-gray-700 font-medium">Full Name</Label>
                   <div className="relative">
