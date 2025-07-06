@@ -715,7 +715,7 @@ export default function Login() {
                   <button
                     type="button"
                     onClick={() => setIsSignUp(true)}
-                    className="hover:text-white font-bold text-[#b91c1c]"
+                    className="hover:text-white font-bold text-[#6d031e]"
                     disabled={isLoading}
                   >
                     Sign up
