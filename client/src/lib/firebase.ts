@@ -30,12 +30,12 @@ import {
 } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyC401hRK08DgE9mWLCBBdWt67XpLLP-6eE",
-  authDomain: "ubianfoodhub.firebaseapp.com",
-  projectId: "ubianfoodhub",
-  storageBucket: "ubianfoodhub.firebasestorage.app",
-  messagingSenderId: "727047776929",
-  appId: "1:727047776929:web:2befc0088170ce5e445ee0",
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyC401hRK08DgE9mWLCBBdWt67XpLLP-6eE",
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "ubianfoodhub.firebaseapp.com",
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "ubianfoodhub",
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "ubianfoodhub.firebasestorage.app",
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "727047776929",
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:727047776929:web:2befc0088170ce5e445ee0",
 };
 
 // Initialize Firebase app with a check for existing app
