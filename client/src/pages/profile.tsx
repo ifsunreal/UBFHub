@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowLeft, Settings, Crown, Ticket, Medal, Users, HelpCircle, Building, FileText, LogOut } from "lucide-react";
+import { ArrowLeft, Settings, Ticket, Medal, HelpCircle, FileText, LogOut, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useLocation } from "wouter";
@@ -37,32 +37,20 @@ export default function Profile() {
 
   const menuItems = [
     { 
-      icon: Crown, 
-      title: "Try UB Pro for free now", 
-      subtitle: "Get exclusive benefits",
-      bgColor: "bg-purple-50",
-      iconColor: "text-purple-600"
-    },
-    { 
       icon: Ticket, 
       title: "Vouchers", 
-      subtitle: "Available offers",
+      subtitle: "Coming Soon",
       bgColor: "bg-gray-50",
-      iconColor: "text-gray-600"
+      iconColor: "text-gray-400",
+      locked: true
     },
     { 
       icon: Medal, 
       title: "UB Rewards", 
-      subtitle: "Earn points",
+      subtitle: "Coming Soon",
       bgColor: "bg-gray-50",
-      iconColor: "text-gray-600"
-    },
-    { 
-      icon: Users, 
-      title: "Invite friends", 
-      subtitle: "Refer and earn",
-      bgColor: "bg-gray-50",
-      iconColor: "text-gray-600"
+      iconColor: "text-gray-400",
+      locked: true
     },
   ];
 
@@ -70,17 +58,14 @@ export default function Profile() {
     { 
       icon: HelpCircle, 
       title: "Help center", 
-      subtitle: "FAQs and support"
-    },
-    { 
-      icon: Building, 
-      title: "UB FoodHub for business", 
-      subtitle: "Partner with us"
+      subtitle: "FAQs and support",
+      action: () => setLocation("/help-center")
     },
     { 
       icon: FileText, 
       title: "Terms & policies", 
-      subtitle: "Legal information"
+      subtitle: "Legal information",
+      action: () => setLocation("/terms-policies")
     },
   ];
 
@@ -98,7 +83,10 @@ export default function Profile() {
             </button>
             <h1 className="text-lg font-semibold">Account</h1>
           </div>
-          <button className="text-red-200 hover:text-white">
+          <button 
+            onClick={() => setLocation("/settings")}
+            className="text-red-200 hover:text-white"
+          >
             <Settings className="h-5 w-5" />
           </button>
         </div>
@@ -127,7 +115,7 @@ export default function Profile() {
           <h4 className="font-medium text-gray-800 mb-3">Perks for you</h4>
           <div className="space-y-3">
             {menuItems.map((item, index) => (
-              <Card key={index} className="cursor-pointer hover:shadow-md transition-shadow">
+              <Card key={index} className={`${item.locked ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:shadow-md'} transition-shadow`}>
                 <CardContent className="pt-6">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
@@ -139,7 +127,11 @@ export default function Profile() {
                         <p className="text-sm text-gray-600">{item.subtitle}</p>
                       </div>
                     </div>
-                    <ArrowLeft className="h-4 w-4 text-gray-400 rotate-180" />
+                    {item.locked ? (
+                      <Lock className="h-4 w-4 text-gray-400" />
+                    ) : (
+                      <ArrowLeft className="h-4 w-4 text-gray-400 rotate-180" />
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -152,7 +144,7 @@ export default function Profile() {
           <h4 className="font-medium text-gray-800 mb-3">General</h4>
           <div className="space-y-3">
             {generalItems.map((item, index) => (
-              <Card key={index} className="cursor-pointer hover:shadow-md transition-shadow">
+              <Card key={index} className="cursor-pointer hover:shadow-md transition-shadow" onClick={item.action}>
                 <CardContent className="pt-6">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">

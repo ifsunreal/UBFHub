@@ -18,6 +18,9 @@ import Profile from "@/pages/profile";
 import Search from "@/pages/search";
 import AdminDashboard from "@/pages/admin-dashboard";
 import StallDashboard from "@/pages/stall-dashboard";
+import Settings from "@/pages/settings";
+import HelpCenter from "@/pages/help-center";
+import TermsPolicies from "@/pages/terms-policies";
 
 function Router() {
   return (
@@ -66,6 +69,21 @@ function Router() {
       <Route path="/stall-dashboard">
         <AuthGuard>
           <StallDashboard />
+        </AuthGuard>
+      </Route>
+      <Route path="/settings">
+        <AuthGuard>
+          <Settings />
+        </AuthGuard>
+      </Route>
+      <Route path="/help-center">
+        <AuthGuard>
+          <HelpCenter />
+        </AuthGuard>
+      </Route>
+      <Route path="/terms-policies">
+        <AuthGuard>
+          <TermsPolicies />
         </AuthGuard>
       </Route>
       <Route component={NotFound} />
