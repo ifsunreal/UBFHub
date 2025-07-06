@@ -230,7 +230,7 @@ export default function Login() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-maroon-800 via-maroon-900 to-red-900 flex flex-col">
         {/* Hero Section with Logo and Illustration */}
-        <div className="flex-1 flex flex-col items-center justify-center px-4 py-8 relative min-h-0">
+        <div className="flex-1 flex flex-col items-center justify-center px-4 py-8 relative min-h-0 bg-[#6d031e]">
           <motion.div
             initial={{ scale: 0, rotate: -180 }}
             animate={{ scale: 1, rotate: 0 }}
@@ -254,7 +254,6 @@ export default function Login() {
             <p className="text-red-100 text-lg font-medium">Your campus dining companion</p>
           </motion.div>
         </div>
-
         {/* Bottom Sign-in Card */}
         <motion.div
           initial={{ y: 100, opacity: 0 }}
