@@ -11,7 +11,7 @@ import { useLocation } from "wouter";
 import { useStore } from "@/lib/store";
 import { useToast } from "@/hooks/use-toast";
 import { User, Mail, Lock, GraduationCap, Eye, EyeOff, Phone } from "lucide-react";
-import { signIn, signUp, createDocument, getDocument, onAuthStateChange, signInWithGoogle, sendVerificationEmail, logOut } from "@/lib/firebase";
+import { signIn, signUp, createDocument, getDocument, onAuthStateChange, signInWithGoogle, sendVerificationEmail, logOut, updateDocument } from "@/lib/firebase";
 
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -24,6 +24,8 @@ export default function Login() {
   const [showRegisterPassword, setShowRegisterPassword] = useState(false);
   const [authMode, setAuthMode] = useState<"social" | "email">("social");
   const [isSignUp, setIsSignUp] = useState(false);
+  const [waitingForVerification, setWaitingForVerification] = useState(false);
+  const [verificationEmail, setVerificationEmail] = useState("");
 
   // Login state
   const [loginData, setLoginData] = useState({
@@ -237,15 +239,15 @@ export default function Login() {
       
       toast({
         title: "Account Created!",
-        description: `A verification email has been sent to ${registerData.email}. Please check your email and verify your account before signing in.`,
+        description: `A verification email has been sent to ${registerData.email}. Please check your email and click the verification link.`,
       });
       
-      // Sign out the user immediately - they must verify email first
-      await logOut();
+      // Set waiting for verification state
+      setWaitingForVerification(true);
+      setVerificationEmail(registerData.email);
       
-      // Return to login screen
-      setAuthMode("social");
-      setIsSignUp(false);
+      // Start checking for email verification
+      checkEmailVerification(firebaseUser);
       
     } catch (error: any) {
       console.error("Registration error:", error);
@@ -268,6 +270,107 @@ export default function Login() {
       setIsLoading(false);
     }
   };
+
+  const checkEmailVerification = async (user: any) => {
+    const checkInterval = setInterval(async () => {
+      try {
+        await user.reload();
+        if (user.emailVerified) {
+          clearInterval(checkInterval);
+          setWaitingForVerification(false);
+          
+          // Update user document with verified status
+          const userData = {
+            email: user.email,
+            fullName: user.displayName || registerData.fullName,
+            studentId: registerData.studentId,
+            phoneNumber: registerData.phoneNumber,
+            role: "student",
+            loyaltyPoints: 0,
+            emailVerified: true,
+          };
+          
+          await updateDocument("users", user.uid, userData);
+          dispatch({ type: "SET_USER", payload: { id: user.uid, ...userData } });
+          
+          toast({
+            title: "Email Verified!",
+            description: "Your account has been verified successfully. Welcome to UB FoodHub!",
+          });
+          
+          setLocation("/");
+        }
+      } catch (error) {
+        console.error("Error checking verification:", error);
+      }
+    }, 3000); // Check every 3 seconds
+
+    // Stop checking after 10 minutes
+    setTimeout(() => {
+      clearInterval(checkInterval);
+      if (waitingForVerification) {
+        setWaitingForVerification(false);
+        toast({
+          title: "Verification Timeout",
+          description: "Please try signing in again after verifying your email.",
+          variant: "destructive",
+        });
+        setAuthMode("social");
+      }
+    }, 600000); // 10 minutes
+  };
+
+  // Show verification waiting screen
+  if (waitingForVerification) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-maroon-800 via-maroon-900 to-red-900 flex flex-col items-center justify-center px-4">
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          className="bg-white rounded-2xl p-8 shadow-2xl max-w-md w-full text-center"
+        >
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+            className="w-16 h-16 mx-auto mb-4"
+          >
+            <img src="/logo.png" alt="UB FoodHub" className="w-full h-full object-contain" />
+          </motion.div>
+          
+          <h2 className="text-xl font-bold text-[#6d031e] mb-2">Waiting for Email Verification</h2>
+          <p className="text-gray-600 mb-4">
+            We've sent a verification email to:
+          </p>
+          <p className="font-semibold text-[#6d031e] mb-6">{verificationEmail}</p>
+          
+          <div className="bg-[#6d031e]/5 p-4 rounded-lg mb-6">
+            <p className="text-sm text-gray-700">
+              <strong>Instructions:</strong>
+              <br />1. Check your email inbox
+              <br />2. Click the verification link
+              <br />3. This screen will automatically update
+            </p>
+          </div>
+          
+          <div className="flex items-center justify-center space-x-2 text-[#6d031e]">
+            <div className="w-2 h-2 bg-[#6d031e] rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+            <div className="w-2 h-2 bg-[#6d031e] rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+            <div className="w-2 h-2 bg-[#6d031e] rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+          </div>
+          
+          <button
+            onClick={() => {
+              setWaitingForVerification(false);
+              setAuthMode("social");
+            }}
+            className="mt-6 text-sm text-gray-500 hover:text-[#6d031e] underline"
+          >
+            Cancel and return to login
+          </button>
+        </motion.div>
+      </div>
+    );
+  }
 
   const handleGoogleSignIn = async () => {
     setIsLoading(true);

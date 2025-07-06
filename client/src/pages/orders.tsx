@@ -1,14 +1,16 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Clock, CheckCircle, XCircle, AlertCircle, QrCode, MapPin, Phone } from "lucide-react";
+import { ArrowLeft, Clock, CheckCircle, XCircle, AlertCircle, QrCode, MapPin, Phone, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { useLocation } from "wouter";
 import { useStore } from "@/lib/store";
 import { useToast } from "@/hooks/use-toast";
-import { subscribeToQuery, updateDocument, deleteDocument } from "@/lib/firebase";
+import { subscribeToQuery, updateDocument, deleteDocument, addDocument } from "@/lib/firebase";
 import BottomNav from "@/components/layout/bottom-nav";
 import QRCode from "@/components/qr-code";
 
@@ -53,7 +55,10 @@ export default function Orders() {
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [showQRDialog, setShowQRDialog] = useState(false);
   const [showOrderDetails, setShowOrderDetails] = useState(false);
+  const [showReviewDialog, setShowReviewDialog] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [reviewRating, setReviewRating] = useState(0);
+  const [reviewComment, setReviewComment] = useState("");
 
   useEffect(() => {
     if (state.user?.id) {
@@ -97,6 +102,59 @@ export default function Orders() {
   const showQRCode = (order: any) => {
     setSelectedOrder(order);
     setShowQRDialog(true);
+  };
+
+  const showReviewModal = (order: any) => {
+    setSelectedOrder(order);
+    setReviewRating(0);
+    setReviewComment("");
+    setShowReviewDialog(true);
+  };
+
+  const submitReview = async () => {
+    if (!selectedOrder || reviewRating === 0) {
+      toast({
+        title: "Rating Required",
+        description: "Please provide a rating before submitting your review.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const reviewData = {
+        orderId: selectedOrder.id,
+        restaurantId: selectedOrder.stallId,
+        userId: state.user?.id,
+        userName: state.user?.fullName || "Anonymous",
+        rating: reviewRating,
+        comment: reviewComment.trim(),
+        createdAt: new Date(),
+      };
+
+      await addDocument("reviews", reviewData);
+      
+      // Mark order as reviewed
+      await updateDocument("orders", selectedOrder.id, { hasReview: true });
+
+      toast({
+        title: "Review Submitted!",
+        description: "Thank you for your feedback!",
+      });
+
+      setShowReviewDialog(false);
+      setReviewRating(0);
+      setReviewComment("");
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to submit review. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const viewOrderDetails = (order: any) => {
@@ -204,13 +262,38 @@ export default function Orders() {
                     View Details
                   </Button>
                   
-                  <Button
-                    disabled={true}
-                    className="flex-1 bg-gray-300 text-gray-500 cursor-not-allowed opacity-50"
-                    title="Cancel feature coming soon"
-                  >
-                    🔒 Cancel Order
-                  </Button>
+                  {order.status === 'completed' && !order.hasReview && (
+                    <Button
+                      onClick={() => showReviewModal(order)}
+                      variant="outline"
+                      className="flex-1 border-orange-500 text-orange-600 hover:bg-orange-500 hover:text-white"
+                    >
+                      <Star className="w-4 h-4 mr-1" />
+                      Review
+                    </Button>
+                  )}
+                  
+                  {order.status === 'completed' && order.hasReview && (
+                    <Button
+                      disabled={true}
+                      className="flex-1 bg-green-100 text-green-600 cursor-not-allowed"
+                      title="Review already submitted"
+                    >
+                      <CheckCircle className="w-4 h-4 mr-1" />
+                      Reviewed
+                    </Button>
+                  )}
+                  
+                  {canCancel && (
+                    <Button
+                      onClick={() => cancelOrder(order.id)}
+                      variant="destructive"
+                      className="flex-1"
+                      disabled={isLoading}
+                    >
+                      Cancel Order
+                    </Button>
+                  )}
                   
                   {order.status === 'ready' && (
                     <Button
@@ -415,6 +498,87 @@ export default function Orders() {
                 </Button>
               </div>
             </motion.div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Review Dialog */}
+      <Dialog open={showReviewDialog} onOpenChange={setShowReviewDialog}>
+        <DialogContent className="max-w-md mx-auto">
+          <DialogHeader>
+            <DialogTitle>Rate Your Experience</DialogTitle>
+          </DialogHeader>
+          {selectedOrder && (
+            <div className="space-y-4">
+              <div className="text-center">
+                <h3 className="font-medium text-gray-900 mb-1">{selectedOrder.stallName}</h3>
+                <p className="text-sm text-gray-600">Order #{selectedOrder.qrCode}</p>
+              </div>
+
+              {/* Star Rating */}
+              <div className="space-y-2">
+                <Label>How would you rate this order?</Label>
+                <div className="flex justify-center gap-2">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      key={star}
+                      type="button"
+                      onClick={() => setReviewRating(star)}
+                      className={`p-1 transition-colors ${
+                        star <= reviewRating 
+                          ? 'text-yellow-400' 
+                          : 'text-gray-300 hover:text-yellow-300'
+                      }`}
+                    >
+                      <Star 
+                        className="w-8 h-8" 
+                        fill={star <= reviewRating ? 'currentColor' : 'none'}
+                      />
+                    </button>
+                  ))}
+                </div>
+                <p className="text-center text-sm text-gray-600">
+                  {reviewRating === 0 && "Tap to rate"}
+                  {reviewRating === 1 && "Poor"}
+                  {reviewRating === 2 && "Fair"}
+                  {reviewRating === 3 && "Good"}
+                  {reviewRating === 4 && "Very Good"}
+                  {reviewRating === 5 && "Excellent"}
+                </p>
+              </div>
+
+              {/* Comment */}
+              <div className="space-y-2">
+                <Label htmlFor="review-comment">Add a comment (optional)</Label>
+                <Textarea
+                  id="review-comment"
+                  placeholder="Tell us about your experience..."
+                  value={reviewComment}
+                  onChange={(e) => setReviewComment(e.target.value)}
+                  rows={3}
+                  className="resize-none"
+                />
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-2 pt-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowReviewDialog(false)}
+                  className="flex-1"
+                  disabled={isLoading}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={submitReview}
+                  className="flex-1 bg-[#6d031e] hover:bg-red-700"
+                  disabled={isLoading || reviewRating === 0}
+                >
+                  {isLoading ? "Submitting..." : "Submit Review"}
+                </Button>
+              </div>
+            </div>
           )}
         </DialogContent>
       </Dialog>
