@@ -8,6 +8,7 @@ import RestaurantCard from "@/components/restaurant-card";
 import BottomNav from "@/components/layout/bottom-nav";
 import FloatingCart from "@/components/floating-cart";
 import LoadingIndicator from "@/components/loading-indicator";
+import LoadingOverlay from "@/components/loading-overlay";
 import { Search, MapPin, Clock, Star, Award, Bell } from "lucide-react";
 import { subscribeToCollection } from "@/lib/firebase";
 import { useStore } from "@/lib/store";
@@ -16,14 +17,19 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
   const [stalls, setStalls] = useState<any[]>([]);
+  const [showLoadingOverlay, setShowLoadingOverlay] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
   const { state } = useStore();
 
   useEffect(() => {
+    setIsLoading(true);
     // Subscribe to real-time stalls data
     const unsubscribe = subscribeToCollection("stalls", (stallsData) => {
       // Only show active stalls
       const activeStalls = stallsData.filter(stall => stall.isActive);
       setStalls(activeStalls);
+      setIsLoading(false);
     });
 
     return () => unsubscribe();
@@ -41,7 +47,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-maroon-600 text-white sticky top-0 z-40">
+      <div className="bg-gradient-to-r from-[#8B0000] via-[#DC143C] to-[#B22222] text-white sticky top-0 z-40">
         <div className="px-4 py-3">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
@@ -158,7 +164,17 @@ export default function Home() {
             {activeFilter === "all" ? "All Stalls" : `${activeFilter} Stalls`}
           </h2>
           
-          {filteredStalls.length === 0 ? (
+          {isLoading ? (
+            <Card className="bg-white border-gray-200">
+              <CardContent className="p-8 text-center">
+                <LoadingIndicator 
+                  message="Fetching stalls..." 
+                  variant="logo" 
+                  size="lg" 
+                />
+              </CardContent>
+            </Card>
+          ) : filteredStalls.length === 0 ? (
             <Card className="bg-white border-gray-200">
               <CardContent className="p-8 text-center">
                 <div className="text-gray-400 mb-2">No stalls found</div>
@@ -199,6 +215,13 @@ export default function Home() {
 
       <BottomNav />
       <FloatingCart />
+      
+      {/* Loading Overlay */}
+      <LoadingOverlay 
+        isVisible={showLoadingOverlay}
+        message={loadingMessage}
+        onClose={() => setShowLoadingOverlay(false)}
+      />
     </div>
   );
 }

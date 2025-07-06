@@ -12,6 +12,8 @@ import { useStore } from "@/lib/store";
 import { useToast } from "@/hooks/use-toast";
 import { subscribeToQuery, updateDocument, deleteDocument, addDocument } from "@/lib/firebase";
 import BottomNav from "@/components/layout/bottom-nav";
+import LoadingIndicator from "@/components/loading-indicator";
+import LoadingOverlay from "@/components/loading-overlay";
 
 export default function Cart() {
   const [, setLocation] = useLocation();
@@ -22,6 +24,9 @@ export default function Cart() {
   const [voucherCode, setVoucherCode] = useState("");
   const [noCutlery, setNoCutlery] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [loadingStates, setLoadingStates] = useState<{[key: string]: boolean}>({});
+  const [showLoadingOverlay, setShowLoadingOverlay] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState("");
 
   useEffect(() => {
     if (state.user?.id) {
@@ -31,23 +36,38 @@ export default function Cart() {
   }, [state.user?.id]);
 
   const updateQuantity = async (itemId: string, newQuantity: number) => {
-    if (newQuantity <= 0) {
-      await deleteDocument("cartItems", itemId);
-      return;
-    }
+    const loadingKey = `update-${itemId}`;
+    setLoadingStates(prev => ({ ...prev, [loadingKey]: true }));
     
     try {
-      await updateDocument("cartItems", itemId, { quantity: newQuantity });
+      if (newQuantity <= 0) {
+        await deleteDocument("cartItems", itemId);
+        toast({
+          title: "Item removed",
+          description: "Item has been removed from cart",
+        });
+      } else {
+        await updateDocument("cartItems", itemId, { quantity: newQuantity });
+        toast({
+          title: "Cart updated",
+          description: "Item quantity has been updated",
+        });
+      }
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to update quantity",
+        description: "Failed to update cart item",
         variant: "destructive",
       });
+    } finally {
+      setLoadingStates(prev => ({ ...prev, [loadingKey]: false }));
     }
   };
 
   const removeItem = async (itemId: string) => {
+    const loadingKey = `remove-${itemId}`;
+    setLoadingStates(prev => ({ ...prev, [loadingKey]: true }));
+    
     try {
       await deleteDocument("cartItems", itemId);
       toast({
@@ -60,6 +80,8 @@ export default function Cart() {
         description: "Failed to remove item",
         variant: "destructive",
       });
+    } finally {
+      setLoadingStates(prev => ({ ...prev, [loadingKey]: false }));
     }
   };
 
@@ -70,11 +92,17 @@ export default function Cart() {
   }, 0);
   const total = subtotal;
 
-  const proceedToCheckout = () => {
+  const proceedToCheckout = async () => {
     if (cartItems.length === 0) return;
     
-    // Navigate to checkout page
-    setLocation("/checkout");
+    setShowLoadingOverlay(true);
+    setLoadingMessage("Preparing checkout...");
+    
+    // Simulate loading time for better UX
+    setTimeout(() => {
+      setShowLoadingOverlay(false);
+      setLocation("/checkout");
+    }, 2000);
   };
 
   if (cartItems.length === 0) {
@@ -107,13 +135,13 @@ export default function Cart() {
       <motion.div 
         initial={{ y: -50 }}
         animate={{ y: 0 }}
-        className="bg-white shadow-sm sticky top-0 z-40"
+        className="bg-gradient-to-r from-[#8B0000] via-[#DC143C] to-[#B22222] shadow-sm sticky top-0 z-40"
       >
         <div className="flex items-center p-4">
-          <Button variant="ghost" size="icon" onClick={() => setLocation("/")} className="mr-3">
+          <Button variant="ghost" size="icon" onClick={() => setLocation("/")} className="mr-3 text-white hover:bg-white/20">
             <ArrowLeft className="w-5 h-5" />
           </Button>
-          <h1 className="text-lg font-semibold">Cart</h1>
+          <h1 className="text-lg font-semibold text-white">Cart</h1>
         </div>
         
         {/* Progress Indicator */}
@@ -199,18 +227,28 @@ export default function Cart() {
                         variant="outline"
                         size="icon"
                         className="w-8 h-8 rounded-full"
+                        disabled={loadingStates[`update-${item.id}`]}
                         onClick={() => updateQuantity(item.id, item.quantity - 1)}
                       >
-                        <Minus className="w-3 h-3" />
+                        {loadingStates[`update-${item.id}`] ? (
+                          <LoadingIndicator variant="dots" size="sm" />
+                        ) : (
+                          <Minus className="w-3 h-3" />
+                        )}
                       </Button>
                       <span className="w-8 text-center font-medium">{item.quantity}</span>
                       <Button
                         variant="outline"
                         size="icon"
                         className="w-8 h-8 rounded-full"
+                        disabled={loadingStates[`update-${item.id}`]}
                         onClick={() => updateQuantity(item.id, item.quantity + 1)}
                       >
-                        <Plus className="w-3 h-3" />
+                        {loadingStates[`update-${item.id}`] ? (
+                          <LoadingIndicator variant="dots" size="sm" />
+                        ) : (
+                          <Plus className="w-3 h-3" />
+                        )}
                       </Button>
                     </div>
                     <div className="flex items-center gap-2">
@@ -219,9 +257,14 @@ export default function Cart() {
                         variant="ghost"
                         size="icon"
                         className="w-8 h-8"
+                        disabled={loadingStates[`remove-${item.id}`]}
                         onClick={() => removeItem(item.id)}
                       >
-                        <Trash2 className="w-4 h-4 text-red-500" />
+                        {loadingStates[`remove-${item.id}`] ? (
+                          <LoadingIndicator variant="dots" size="sm" />
+                        ) : (
+                          <Trash2 className="w-4 h-4 text-red-500" />
+                        )}
                       </Button>
                     </div>
                   </div>
@@ -323,15 +366,26 @@ export default function Cart() {
         <div className="max-w-md mx-auto">
           <Button
             onClick={proceedToCheckout}
-            disabled={isProcessing || cartItems.length === 0}
+            disabled={isProcessing || cartItems.length === 0 || showLoadingOverlay}
             className="w-full bg-[#6d031e] hover:bg-red-700 text-white py-4 text-lg font-medium"
           >
-            {isProcessing ? "Processing..." : "Checkout"}
+            {isProcessing || showLoadingOverlay ? (
+              <LoadingIndicator message="Processing..." variant="dots" />
+            ) : (
+              "Checkout"
+            )}
           </Button>
         </div>
       </motion.div>
 
       <BottomNav />
+      
+      {/* Loading Overlay */}
+      <LoadingOverlay 
+        isVisible={showLoadingOverlay}
+        message={loadingMessage}
+        onClose={() => setShowLoadingOverlay(false)}
+      />
     </div>
   );
 }

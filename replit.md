@@ -161,6 +161,21 @@ UB FoodHub is a comprehensive mobile web application designed for the University
 - **Dynamic Menu Items**: Menu items now include glass card effects, floating animations, and smooth add-to-cart interactions
 - **Improved Loading States**: "Adding to Cart", "Updating Order", and other actions now show proper loading indicators
 
+### Comprehensive Loading States Implementation (July 06, 2025)
+- **Universal Loading Design**: Implemented splash screen-inspired loading overlays for all major user actions
+- **Contextual Loading Messages**: Added specific loading messages like "Fetching stalls...", "Adding to cart...", "Preparing checkout...", etc.
+- **Cart Action Loading**: All cart operations now show proper loading states with disabled buttons and visual feedback
+- **Restaurant Browsing**: Added loading indicators when fetching restaurant data with UB logo animation
+- **Full-Screen Loading Overlays**: Created beautiful loading overlays that match the splash screen design with floating particles
+- **Button Loading States**: Quantity buttons, remove buttons, and checkout buttons show loading indicators during operations
+- **Navigation Loading**: Added loading states for page transitions and major navigation actions
+
+### UI Color Consistency Fixes (July 06, 2025)
+- **Fixed Cart Back Button**: Changed from black to white with hover effects that don't hurt the eyes
+- **Header Color Matching**: Made all page headers use consistent gradient from home, search, and cart pages
+- **Maroon Theme Consistency**: Applied the university's maroon color scheme consistently across all components
+- **Improved Button Contrast**: Enhanced visibility and accessibility of all interactive elements
+
 ## Changelog
 
 ```
@@ -178,6 +193,9 @@ Changelog:
 - July 06, 2025. Implemented liquid glass effects and modern loading indicators
 - July 06, 2025. Made all pages dynamically update without refresh
 - July 06, 2025. Auto-dismissing notifications and enhanced animations
+- July 06, 2025. Implemented comprehensive loading states using splash screen design
+- July 06, 2025. Fixed cart back button color and matched header colors across all pages
+- July 06, 2025. Added contextual loading messages for all user actions (add, checkout, remove, etc.)
 ```
 
 ## User Preferences

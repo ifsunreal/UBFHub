@@ -4,7 +4,7 @@ import logoPath from "@assets/ub foodhub logo2_1751778236646.png";
 interface LoadingIndicatorProps {
   message?: string;
   size?: "sm" | "md" | "lg";
-  variant?: "logo" | "spinner" | "dots";
+  variant?: "logo" | "spinner" | "dots" | "splash";
   className?: string;
 }
 
@@ -25,6 +25,98 @@ export default function LoadingIndicator({
     md: "w-12 h-12",
     lg: "w-16 h-16"
   };
+
+  if (variant === "splash") {
+    return (
+      <div className={`flex flex-col items-center justify-center space-y-6 p-8 ${className}`}>
+        {/* Floating particles */}
+        <div className="absolute inset-0 overflow-hidden">
+          {[...Array(20)].map((_, i) => (
+            <motion.div
+              key={i}
+              className="absolute w-2 h-2 bg-white/20 rounded-full"
+              initial={{ 
+                x: Math.random() * (typeof window !== 'undefined' ? window.innerWidth : 800),
+                y: Math.random() * (typeof window !== 'undefined' ? window.innerHeight : 600),
+                scale: 0
+              }}
+              animate={{
+                y: [null, Math.random() * -100],
+                scale: [0, 1, 0],
+                opacity: [0, 1, 0]
+              }}
+              transition={{
+                duration: 3 + Math.random() * 2,
+                repeat: Infinity,
+                delay: Math.random() * 2
+              }}
+            />
+          ))}
+        </div>
+
+        {/* Logo with glass effect */}
+        <motion.div
+          className="relative"
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ duration: 1, ease: "easeOut" }}
+        >
+          <motion.div
+            className="w-24 h-24 rounded-full flex items-center justify-center shadow-2xl glass-card relative overflow-hidden"
+            animate={{ 
+              rotate: [0, 360],
+              scale: [1, 1.05, 1]
+            }}
+            transition={{ 
+              rotate: { duration: 3, repeat: Infinity, ease: "linear" },
+              scale: { duration: 2, repeat: Infinity }
+            }}
+          >
+            <img
+              src={logoPath}
+              alt="Loading"
+              className="w-20 h-20 object-contain drop-shadow-lg"
+            />
+          </motion.div>
+          
+          {/* Glow effect */}
+          <motion.div
+            className="absolute inset-0 w-24 h-24 bg-gradient-to-br from-[#8B0000] via-[#DC143C] to-[#B22222] rounded-full blur-lg opacity-30"
+            animate={{ scale: [1, 1.2, 1] }}
+            transition={{ duration: 2, repeat: Infinity }}
+          />
+        </motion.div>
+
+        {/* Message */}
+        <motion.div
+          className="text-center"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+        >
+          <motion.p
+            className="text-white text-lg font-medium mb-2"
+            animate={{ opacity: [0.7, 1, 0.7] }}
+            transition={{ duration: 1.5, repeat: Infinity }}
+          >
+            {message}
+          </motion.p>
+          
+          {/* Loading dots */}
+          <div className="flex justify-center space-x-1">
+            {[0, 1, 2].map((i) => (
+              <motion.div
+                key={i}
+                className="w-2 h-2 bg-white/60 rounded-full"
+                animate={{ scale: [1, 1.5, 1], opacity: [0.5, 1, 0.5] }}
+                transition={{ duration: 0.8, repeat: Infinity, delay: i * 0.2 }}
+              />
+            ))}
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
 
   if (variant === "logo") {
     return (
