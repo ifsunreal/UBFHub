@@ -1,13 +1,13 @@
 import { createContext, useContext, useReducer, ReactNode } from "react";
 
 interface User {
-  id: number;
-  username: string;
+  id: string;
   email: string;
   fullName: string;
   studentId?: string | null;
   role: string;
-  createdAt: Date;
+  loyaltyPoints?: number;
+  createdAt?: any;
 }
 
 interface StoreState {

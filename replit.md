@@ -101,11 +101,39 @@ UB FoodHub is a comprehensive mobile web application designed for the University
 - **Schema**: TypeScript-first with Zod validation
 - **Seeding**: In-memory storage with sample data for development
 
+## Recent Changes
+
+### Firebase Integration (July 06, 2025)
+- Integrated Firebase Authentication for secure user login/registration
+- Implemented Firestore database for real-time data synchronization
+- Added UB FoodHub logo to login page with maroon gradient background
+- Created role-based authentication system (admin, stall_owner, student)
+
+### Role-Based Dashboards (July 06, 2025)
+- **Admin Dashboard**: Complete system management with user/stall/order oversight
+- **Stall Owner Dashboard**: Menu management, order processing, stall information editing
+- **Student Dashboard**: Enhanced home page with loyalty points, real-time stall data
+
+### Real-Time Features (July 06, 2025)
+- Live data synchronization using Firestore subscriptions
+- Real-time order status updates
+- Dynamic stall availability and menu item management
+- Loyalty points system for student engagement
+
+### QR Code System (July 06, 2025)
+- QR codes generated for each order for pickup verification
+- Real-time order tracking and status updates
+- Integration with stall owner workflow for order management
+
 ## Changelog
 
 ```
 Changelog:
 - July 06, 2025. Initial setup
+- July 06, 2025. Firebase Authentication & Firestore integration
+- July 06, 2025. Role-based dashboards (Admin, Stall Owner, Student)
+- July 06, 2025. Real-time data synchronization and QR code system
+- July 06, 2025. Loyalty points system and UB FoodHub branding
 ```
 
 ## User Preferences

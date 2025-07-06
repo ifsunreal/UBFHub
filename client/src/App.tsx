@@ -13,6 +13,8 @@ import Cart from "@/pages/cart";
 import Orders from "@/pages/orders";
 import Profile from "@/pages/profile";
 import Search from "@/pages/search";
+import AdminDashboard from "@/pages/admin-dashboard";
+import StallDashboard from "@/pages/stall-dashboard";
 
 function Router() {
   return (
@@ -46,6 +48,16 @@ function Router() {
       <Route path="/search">
         <AuthGuard>
           <Search />
+        </AuthGuard>
+      </Route>
+      <Route path="/admin">
+        <AuthGuard>
+          <AdminDashboard />
+        </AuthGuard>
+      </Route>
+      <Route path="/stall-dashboard">
+        <AuthGuard>
+          <StallDashboard />
         </AuthGuard>
       </Route>
       <Route component={NotFound} />
