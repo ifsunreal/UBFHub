@@ -438,7 +438,7 @@ export default function Login() {
               </Button>
 
               <div className="text-center pt-2">
-                <p className="text-red-100">
+                <p className="text-[#6d031e] font-normal">
                   No account?{" "}
                   <button
                     type="button"
