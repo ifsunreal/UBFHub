@@ -33,12 +33,16 @@ import {
   addDocument, 
   updateDocument, 
   deleteDocument, 
-  getDocument 
+  getDocument,
+  logOut 
 } from "@/lib/firebase";
+import { useLocation } from "wouter";
+import { LogOut } from "lucide-react";
 
 export default function StallDashboard() {
   const { state } = useStore();
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
   const [menuItems, setMenuItems] = useState<any[]>([]);
   const [orders, setOrders] = useState<any[]>([]);
   const [stallInfo, setStallInfo] = useState<any>(null);
@@ -52,7 +56,8 @@ export default function StallDashboard() {
     category: "Main Course",
     isAvailable: true,
     isPopular: false,
-    image: ""
+    image: "",
+    customizations: [""] // For add-ons like "Extra Rice", "No Onions", etc.
   });
 
   useEffect(() => {
@@ -129,7 +134,8 @@ export default function StallDashboard() {
         category: "Main Course",
         isAvailable: true,
         isPopular: false,
-        image: ""
+        image: "",
+        customizations: [""]
       });
     } catch (error) {
       toast({
@@ -172,6 +178,15 @@ export default function StallDashboard() {
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      await logOut();
+      setLocation("/login");
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
+  };
+
   const updateOrderStatus = async (orderId: string, newStatus: string) => {
     try {
       await updateDocument("orders", orderId, { 
@@ -201,7 +216,8 @@ export default function StallDashboard() {
         category: item.category || "Main Course",
         isAvailable: item.isAvailable ?? true,
         isPopular: item.isPopular ?? false,
-        image: item.image || ""
+        image: item.image || "",
+        customizations: item.customizations || [""]
       });
     } else {
       setEditingItem(null);
@@ -212,7 +228,8 @@ export default function StallDashboard() {
         category: "Main Course",
         isAvailable: true,
         isPopular: false,
-        image: ""
+        image: "",
+        customizations: [""]
       });
     }
     setIsMenuDialogOpen(true);
@@ -243,9 +260,15 @@ export default function StallDashboard() {
         animate={{ y: 0 }}
         className="bg-white shadow-sm sticky top-0 z-40"
       >
-        <div className="p-4">
-          <h1 className="text-2xl font-bold text-gray-900">Stall Dashboard</h1>
-          <p className="text-sm text-gray-600">{stallInfo?.name || "Your Food Stall"}</p>
+        <div className="p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Stall Dashboard</h1>
+            <p className="text-sm text-gray-600">{stallInfo?.name || "Your Food Stall"}</p>
+          </div>
+          <Button onClick={handleLogout} variant="outline" className="w-full sm:w-auto">
+            <LogOut className="w-4 h-4 mr-2" />
+            Logout
+          </Button>
         </div>
 
         {/* Tab Navigation */}
@@ -258,7 +281,7 @@ export default function StallDashboard() {
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex items-center gap-2 px-4 py-3 whitespace-nowrap text-sm font-medium border-b-2 transition-colors ${
                   activeTab === tab.id
-                    ? "border-maroon-600 text-maroon-600"
+                    ? "border-[#6d031e] text-[#6d031e]"
                     : "border-transparent text-gray-500 hover:text-gray-700"
                 }`}
               >
@@ -377,7 +400,7 @@ export default function StallDashboard() {
           >
             <div className="flex justify-between items-center">
               <h2 className="text-lg font-semibold">Menu Items</h2>
-              <Button onClick={() => openEditDialog()} className="bg-maroon-600 hover:bg-maroon-700">
+              <Button onClick={() => openEditDialog()} className="bg-[#6d031e] hover:bg-red-700">
                 <Plus className="w-4 h-4 mr-2" />
                 Add Item
               </Button>
@@ -581,7 +604,7 @@ export default function StallDashboard() {
                     </SelectContent>
                   </Select>
                 </div>
-                <Button className="w-full bg-maroon-600 hover:bg-maroon-700">
+                <Button className="w-full bg-[#6d031e] hover:bg-red-700">
                   <Save className="w-4 h-4 mr-2" />
                   Save Changes
                 </Button>
@@ -652,6 +675,52 @@ export default function StallDashboard() {
               />
             </div>
 
+            <div>
+              <Label>Customizable Options</Label>
+              <div className="space-y-2">
+                {itemForm.customizations.map((customization, index) => (
+                  <div key={index} className="flex gap-2">
+                    <Input
+                      value={customization}
+                      onChange={(e) => {
+                        const newCustomizations = [...itemForm.customizations];
+                        newCustomizations[index] = e.target.value;
+                        setItemForm({ ...itemForm, customizations: newCustomizations });
+                      }}
+                      placeholder="e.g., Extra Rice, No Onions, Spicy Level"
+                      className="flex-1"
+                    />
+                    {itemForm.customizations.length > 1 && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          const newCustomizations = itemForm.customizations.filter((_, i) => i !== index);
+                          setItemForm({ ...itemForm, customizations: newCustomizations });
+                        }}
+                        className="text-red-600 hover:text-red-700"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    )}
+                  </div>
+                ))}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setItemForm({ ...itemForm, customizations: [...itemForm.customizations, ""] });
+                  }}
+                  className="w-full"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Customization Option
+                </Button>
+              </div>
+            </div>
+
             <div className="flex items-center justify-between">
               <Label>Available</Label>
               <Switch
@@ -678,7 +747,7 @@ export default function StallDashboard() {
               </Button>
               <Button
                 onClick={handleSaveMenuItem}
-                className="flex-1 bg-maroon-600 hover:bg-maroon-700"
+                className="flex-1 bg-[#6d031e] hover:bg-red-700"
               >
                 {editingItem ? "Update" : "Add"} Item
               </Button>

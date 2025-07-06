@@ -21,7 +21,10 @@ export default function AdminDashboard() {
   const [users, setUsers] = useState<any[]>([]);
   const [stalls, setStalls] = useState<any[]>([]);
   const [orders, setOrders] = useState<any[]>([]);
+  const [categories, setCategories] = useState<string[]>(['Filipino', 'Asian', 'Western', 'Snacks', 'Beverages', 'Desserts']);
   const [isLoading, setIsLoading] = useState(false);
+  const [userFilter, setUserFilter] = useState('all');
+  const [newCategory, setNewCategory] = useState('');
 
   // New stall form
   const [newStall, setNewStall] = useState({
@@ -129,71 +132,88 @@ export default function AdminDashboard() {
   const totalOrders = orders.length;
   const activeStalls = stalls.filter(stall => stall.isActive).length;
 
+  // Filter users based on selected filter
+  const filteredUsers = users.filter(user => {
+    if (userFilter === 'all') return true;
+    return user.role === userFilter;
+  });
+
+  const handleAddCategory = () => {
+    if (newCategory.trim() && !categories.includes(newCategory.trim())) {
+      setCategories([...categories, newCategory.trim()]);
+      setNewCategory('');
+      toast({
+        title: "Category added",
+        description: `"${newCategory.trim()}" has been added to the categories.`,
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-maroon-600 text-white">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+      <div className="bg-[#6d031e] text-white">
+        <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div className="flex items-center gap-3">
-            <Settings className="w-8 h-8" />
+            <Settings className="w-6 h-6 sm:w-8 sm:h-8" />
             <div>
-              <h1 className="text-xl font-bold">Admin Dashboard</h1>
-              <p className="text-maroon-100">Welcome, {state.user?.fullName}</p>
+              <h1 className="text-lg sm:text-xl font-bold">Admin Dashboard</h1>
+              <p className="text-red-100 text-sm">Welcome, {state.user?.fullName}</p>
             </div>
           </div>
-          <Button onClick={handleLogout} variant="ghost" className="text-white hover:bg-maroon-700">
+          <Button onClick={handleLogout} variant="ghost" className="text-white hover:bg-red-700 w-full sm:w-auto">
             <LogOut className="w-4 h-4 mr-2" />
             Logout
           </Button>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto p-6">
+      <div className="max-w-7xl mx-auto p-4 sm:p-6">
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
           <Card>
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center">
-                <Users className="w-8 h-8 text-maroon-600" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Total Users</p>
-                  <p className="text-2xl font-bold text-gray-900">{totalUsers}</p>
+                <Users className="w-6 h-6 sm:w-8 sm:h-8 text-[#6d031e]" />
+                <div className="ml-3 sm:ml-4">
+                  <p className="text-xs sm:text-sm font-medium text-gray-600">Total Users</p>
+                  <p className="text-lg sm:text-2xl font-bold text-gray-900">{totalUsers}</p>
                 </div>
               </div>
             </CardContent>
           </Card>
           
           <Card>
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center">
-                <Store className="w-8 h-8 text-maroon-600" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Total Stalls</p>
-                  <p className="text-2xl font-bold text-gray-900">{totalStalls}</p>
+                <Store className="w-6 h-6 sm:w-8 sm:h-8 text-[#6d031e]" />
+                <div className="ml-3 sm:ml-4">
+                  <p className="text-xs sm:text-sm font-medium text-gray-600">Total Stalls</p>
+                  <p className="text-lg sm:text-2xl font-bold text-gray-900">{totalStalls}</p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
           <Card>
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center">
-                <BarChart3 className="w-8 h-8 text-maroon-600" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Active Stalls</p>
-                  <p className="text-2xl font-bold text-gray-900">{activeStalls}</p>
+                <BarChart3 className="w-6 h-6 sm:w-8 sm:h-8 text-[#6d031e]" />
+                <div className="ml-3 sm:ml-4">
+                  <p className="text-xs sm:text-sm font-medium text-gray-600">Active Stalls</p>
+                  <p className="text-lg sm:text-2xl font-bold text-gray-900">{activeStalls}</p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
           <Card>
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center">
-                <BarChart3 className="w-8 h-8 text-maroon-600" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Total Orders</p>
-                  <p className="text-2xl font-bold text-gray-900">{totalOrders}</p>
+                <BarChart3 className="w-6 h-6 sm:w-8 sm:h-8 text-[#6d031e]" />
+                <div className="ml-3 sm:ml-4">
+                  <p className="text-xs sm:text-sm font-medium text-gray-600">Total Orders</p>
+                  <p className="text-lg sm:text-2xl font-bold text-gray-900">{totalOrders}</p>
                 </div>
               </div>
             </CardContent>
@@ -201,25 +221,38 @@ export default function AdminDashboard() {
         </div>
 
         <Tabs defaultValue="users" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="users">Users Management</TabsTrigger>
-            <TabsTrigger value="stalls">Stalls Management</TabsTrigger>
-            <TabsTrigger value="orders">Orders Overview</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-3 text-xs sm:text-sm">
+            <TabsTrigger value="users">Users</TabsTrigger>
+            <TabsTrigger value="stalls">Stalls</TabsTrigger>
+            <TabsTrigger value="categories">Categories</TabsTrigger>
           </TabsList>
 
           <TabsContent value="users" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle>User Accounts</CardTitle>
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                  <CardTitle>User Accounts</CardTitle>
+                  <Select value={userFilter} onValueChange={setUserFilter}>
+                    <SelectTrigger className="w-full sm:w-48">
+                      <SelectValue placeholder="Filter by role" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Users</SelectItem>
+                      <SelectItem value="student">Students Only</SelectItem>
+                      <SelectItem value="stall_owner">Stall Owners Only</SelectItem>
+                      <SelectItem value="admin">Admins Only</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {users.map((user) => (
-                    <div key={user.id} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div className="flex-1">
-                        <h3 className="font-medium">{user.fullName}</h3>
-                        <p className="text-sm text-gray-600">{user.email}</p>
-                        <div className="flex items-center gap-2 mt-1">
+                  {filteredUsers.map((user) => (
+                    <div key={user.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 border rounded-lg gap-4">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-medium truncate">{user.fullName}</h3>
+                        <p className="text-sm text-gray-600 truncate">{user.email}</p>
+                        <div className="flex items-center gap-2 mt-2 flex-wrap">
                           <Badge variant={user.role === 'admin' ? 'destructive' : user.role === 'stall_owner' ? 'default' : 'secondary'}>
                             {user.role.replace('_', ' ').toUpperCase()}
                           </Badge>
@@ -231,8 +264,9 @@ export default function AdminDashboard() {
                       {user.role !== 'admin' && (
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
-                            <Button variant="destructive" size="sm">
-                              <Trash2 className="w-4 h-4" />
+                            <Button variant="destructive" size="sm" className="shrink-0">
+                              <Trash2 className="w-4 h-4 sm:mr-2" />
+                              <span className="hidden sm:inline">Delete</span>
                             </Button>
                           </AlertDialogTrigger>
                           <AlertDialogContent>
@@ -253,6 +287,56 @@ export default function AdminDashboard() {
                       )}
                     </div>
                   ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="categories" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Manage Categories</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <Input
+                      placeholder="Enter new category name"
+                      value={newCategory}
+                      onChange={(e) => setNewCategory(e.target.value)}
+                      className="flex-1"
+                    />
+                    <Button onClick={handleAddCategory} className="bg-[#6d031e] hover:bg-red-700 w-full sm:w-auto">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Category
+                    </Button>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                    {categories.map((category, index) => (
+                      <Card key={index} className="p-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium">{category}</span>
+                          {index >= 6 && ( // Allow deleting custom categories (not the initial 6)
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                setCategories(categories.filter((_, i) => i !== index));
+                                toast({
+                                  title: "Category removed",
+                                  description: `"${category}" has been removed.`,
+                                });
+                              }}
+                              className="h-6 w-6 p-0 text-red-600 hover:text-red-700"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </Button>
+                          )}
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -286,12 +370,9 @@ export default function AdminDashboard() {
                           <SelectValue placeholder="Select category" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="Filipino">Filipino</SelectItem>
-                          <SelectItem value="Asian">Asian</SelectItem>
-                          <SelectItem value="Western">Western</SelectItem>
-                          <SelectItem value="Snacks">Snacks</SelectItem>
-                          <SelectItem value="Beverages">Beverages</SelectItem>
-                          <SelectItem value="Desserts">Desserts</SelectItem>
+                          {categories.map((category) => (
+                            <SelectItem key={category} value={category}>{category}</SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     </div>
@@ -324,7 +405,7 @@ export default function AdminDashboard() {
                       </SelectContent>
                     </Select>
                   </div>
-                  <Button type="submit" disabled={isLoading} className="bg-maroon-600 hover:bg-maroon-700">
+                  <Button type="submit" disabled={isLoading} className="bg-[#6d031e] hover:bg-red-700">
                     <Plus className="w-4 h-4 mr-2" />
                     {isLoading ? "Creating..." : "Create Stall"}
                   </Button>
@@ -366,35 +447,7 @@ export default function AdminDashboard() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="orders" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Recent Orders</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {orders.slice(0, 10).map((order) => (
-                    <div key={order.id} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div className="flex-1">
-                        <h3 className="font-medium">Order #{order.id}</h3>
-                        <p className="text-sm text-gray-600">Total: ₱{order.totalAmount}</p>
-                        <p className="text-xs text-gray-500">
-                          {order.createdAt && new Date(order.createdAt.seconds * 1000).toLocaleDateString()}
-                        </p>
-                      </div>
-                      <Badge variant={
-                        order.status === 'completed' ? 'default' :
-                        order.status === 'preparing' ? 'secondary' :
-                        order.status === 'ready' ? 'default' : 'destructive'
-                      }>
-                        {order.status}
-                      </Badge>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+
         </Tabs>
       </div>
     </div>
