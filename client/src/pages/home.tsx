@@ -9,6 +9,7 @@ import BottomNav from "@/components/layout/bottom-nav";
 import FloatingCart from "@/components/floating-cart";
 import LoadingIndicator from "@/components/loading-indicator";
 import LoadingOverlay from "@/components/loading-overlay";
+import NotificationCenter from "@/components/notifications/notification-center";
 import { Search, MapPin, Clock, Star, Award, Bell } from "lucide-react";
 import { subscribeToCollection } from "@/lib/firebase";
 import { useStore } from "@/lib/store";
@@ -20,7 +21,23 @@ export default function Home() {
   const [showLoadingOverlay, setShowLoadingOverlay] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [unreadNotificationCount, setUnreadNotificationCount] = useState(0);
   const { state } = useStore();
+
+  // Test notification function (for development)
+  const sendTestNotification = () => {
+    // Only run if notifications are enabled
+    if ('Notification' in window && Notification.permission === 'granted') {
+      new Notification('UB FoodHub', {
+        body: 'Your order is ready for pickup!',
+        icon: '/logo.png',
+        badge: '/logo.png',
+        tag: 'order-ready',
+        requireInteraction: true,
+      });
+    }
+  };
 
   useEffect(() => {
     setIsLoading(true);
@@ -73,7 +90,21 @@ export default function Home() {
                   {state.user?.loyaltyPoints || 0} pts
                 </span>
               </div>
-              <Bell className="w-5 h-5" />
+              <button
+                onClick={() => setShowNotifications(true)}
+                className="relative p-1 hover:bg-maroon-600 rounded-full transition-colors"
+              >
+                <Bell className="w-5 h-5" />
+                {unreadNotificationCount > 0 && (
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center"
+                  >
+                    {unreadNotificationCount > 9 ? "9+" : unreadNotificationCount}
+                  </motion.div>
+                )}
+              </button>
             </div>
           </div>
 
@@ -253,6 +284,14 @@ export default function Home() {
         isVisible={showLoadingOverlay}
         message={loadingMessage}
         onClose={() => setShowLoadingOverlay(false)}
+      />
+      
+      {/* Notification Center */}
+      <NotificationCenter
+        isOpen={showNotifications}
+        onClose={() => setShowNotifications(false)}
+        unreadCount={unreadNotificationCount}
+        onUpdateCount={setUnreadNotificationCount}
       />
     </div>
   );

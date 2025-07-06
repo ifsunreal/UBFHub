@@ -1,12 +1,14 @@
-import { useState } from "react";
-import { ArrowLeft, Camera, Eye, EyeOff } from "lucide-react";
+import { useState, useEffect } from "react";
+import { ArrowLeft, Camera, Eye, EyeOff, Bell, BellOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Switch } from "@/components/ui/switch";
 import { useLocation } from "wouter";
 import { useStore } from "@/lib/store";
 import { useToast } from "@/hooks/use-toast";
+import { NotificationService } from "@/lib/notifications";
 import BottomNav from "@/components/layout/bottom-nav";
 
 export default function Settings() {
@@ -17,12 +19,49 @@ export default function Settings() {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>("default");
 
   const [passwordData, setPasswordData] = useState({
     currentPassword: "",
     newPassword: "",
     confirmPassword: "",
   });
+
+  const notificationService = NotificationService.getInstance();
+
+  useEffect(() => {
+    // Check notification permission status on component mount
+    setNotificationPermission(notificationService.getPermissionStatus());
+    setNotificationsEnabled(notificationService.isPermissionGranted());
+  }, []);
+
+  const handleNotificationToggle = async (enabled: boolean) => {
+    if (enabled) {
+      const granted = await notificationService.requestPermission();
+      setNotificationsEnabled(granted);
+      setNotificationPermission(notificationService.getPermissionStatus());
+      
+      if (granted) {
+        toast({
+          title: "Notifications enabled",
+          description: "You'll now receive push notifications for order updates and important information.",
+        });
+      } else {
+        toast({
+          title: "Permission denied",
+          description: "Please enable notifications in your browser settings to receive updates.",
+          variant: "destructive",
+        });
+      }
+    } else {
+      setNotificationsEnabled(false);
+      toast({
+        title: "Notifications disabled",
+        description: "You won't receive push notifications. You can re-enable them anytime.",
+      });
+    }
+  };
 
   const handlePasswordUpdate = async () => {
     if (passwordData.newPassword !== passwordData.confirmPassword) {
@@ -84,6 +123,60 @@ export default function Settings() {
       </header>
 
       <div className="p-4 space-y-6 pb-20">
+        {/* Notification Settings */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Notification Settings</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="p-2 rounded-lg bg-blue-50">
+                  {notificationsEnabled ? (
+                    <Bell className="h-5 w-5 text-blue-600" />
+                  ) : (
+                    <BellOff className="h-5 w-5 text-gray-600" />
+                  )}
+                </div>
+                <div>
+                  <h3 className="font-medium text-gray-800">Push Notifications</h3>
+                  <p className="text-sm text-gray-600">
+                    Get notified about order updates and important information
+                  </p>
+                </div>
+              </div>
+              <Switch
+                checked={notificationsEnabled}
+                onCheckedChange={handleNotificationToggle}
+              />
+            </div>
+            
+            {notificationPermission === "denied" && (
+              <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-sm text-red-700">
+                  Notifications are blocked in your browser. Please enable them in your browser settings to receive updates.
+                </p>
+              </div>
+            )}
+            
+            {notificationPermission === "default" && (
+              <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <p className="text-sm text-yellow-700">
+                  Enable notifications to stay updated on your orders and receive important announcements.
+                </p>
+              </div>
+            )}
+            
+            {notificationsEnabled && (
+              <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                <p className="text-sm text-green-700">
+                  ✓ Notifications are enabled. You'll receive updates about your orders and important information.
+                </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
         {/* Profile Picture Section */}
         <Card>
           <CardHeader>
