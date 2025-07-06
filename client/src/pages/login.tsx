@@ -268,7 +268,7 @@ export default function Login() {
             className="mb-8"
           >
             <h2 className="text-2xl font-bold text-white mb-2">Sign up or log in</h2>
-            <p className="text-red-200">Select your preferred method to continue</p>
+            <p className="text-[#ae0a33] font-normal">Select your preferred method to continue</p>
           </motion.div>
 
           <div className="space-y-4">
