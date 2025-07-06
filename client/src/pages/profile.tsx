@@ -87,7 +87,7 @@ export default function Profile() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-[#6d031e] text-white p-4">
+      <header className="text-white p-4 bg-[#820d2a]">
         <div className="flex items-center justify-between">
           <div className="flex items-center">
             <button
@@ -103,7 +103,6 @@ export default function Profile() {
           </button>
         </div>
       </header>
-
       <div className="p-4 space-y-6 pb-20">
         {/* Profile Header */}
         <div className="flex items-center space-x-4">
@@ -217,7 +216,6 @@ export default function Profile() {
         {/* Version */}
         <p className="text-center text-xs text-gray-500">Version 1.0.0 (2024001)</p>
       </div>
-
       <BottomNav />
     </div>
   );

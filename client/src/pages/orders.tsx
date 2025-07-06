@@ -106,7 +106,7 @@ export default function Orders() {
             <Button variant="ghost" size="icon" onClick={() => setLocation("/")} className="mr-3">
               <ArrowLeft className="w-5 h-5" />
             </Button>
-            <h1 className="text-lg font-semibold">My Orders</h1>
+            <h1 className="text-lg font-semibold text-[#ffffff]">My Orders</h1>
           </div>
         </div>
         <div className="flex flex-col items-center justify-center min-h-[60vh] p-8">
