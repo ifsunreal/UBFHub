@@ -357,7 +357,7 @@ export default function Cart() {
       <motion.div
         initial={{ y: 100 }}
         animate={{ y: 0 }}
-        className="fixed bottom-0 left-0 right-0 bg-white border-t p-4 z-50"
+        className="fixed bottom-16 left-0 right-0 bg-white border-t p-4 z-[60]"
       >
         <div className="max-w-md mx-auto">
           <Button
