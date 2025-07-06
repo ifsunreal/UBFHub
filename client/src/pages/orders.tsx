@@ -114,7 +114,7 @@ export default function Orders() {
           <div className="text-6xl mb-4">📦</div>
           <h2 className="text-xl font-semibold text-gray-900 mb-2">No orders yet</h2>
           <p className="text-gray-600 text-center mb-6">When you place an order, it will appear here</p>
-          <Button onClick={() => setLocation("/")} className="bg-maroon-600 hover:bg-maroon-700">
+          <Button onClick={() => setLocation("/")} className="bg-[#6d031e] hover:bg-red-700">
             Start Ordering
           </Button>
         </div>
@@ -226,7 +226,7 @@ export default function Orders() {
                   {order.status === 'ready' || order.status === 'preparing' ? (
                     <Button
                       onClick={() => showQRCode(order)}
-                      className="flex-1 bg-maroon-600 hover:bg-maroon-700 text-white"
+                      className="flex-1 bg-[#6d031e] hover:bg-red-700 text-white"
                     >
                       <QrCode className="w-4 h-4 mr-2" />
                       Show QR Code

@@ -164,8 +164,8 @@ export default function Cart() {
             </div>
             <div className="flex-1 h-px bg-gray-200 mx-4"></div>
             <div className="flex items-center">
-              <div className="w-6 h-6 bg-maroon-600 rounded-full flex items-center justify-center text-xs font-medium text-white">2</div>
-              <span className="text-xs text-maroon-600 ml-2 font-medium">Cart</span>
+              <div className="w-6 h-6 bg-[#6d031e] rounded-full flex items-center justify-center text-xs font-medium text-white">2</div>
+              <span className="text-xs text-[#6d031e] ml-2 font-medium">Cart</span>
             </div>
             <div className="flex-1 h-px bg-gray-200 mx-4"></div>
             <div className="flex items-center">
@@ -365,7 +365,7 @@ export default function Cart() {
           <Button
             onClick={proceedToCheckout}
             disabled={isProcessing || cartItems.length === 0}
-            className="w-full bg-pink-600 hover:bg-pink-700 text-white py-4 text-lg font-medium"
+            className="w-full bg-[#6d031e] hover:bg-red-700 text-white py-4 text-lg font-medium"
           >
             {isProcessing ? "Processing..." : "Review payment and address"}
           </Button>

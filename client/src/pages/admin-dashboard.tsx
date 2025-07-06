@@ -15,7 +15,7 @@ import { useLocation } from "wouter";
 import { Users, Store, Plus, Edit, Trash2, LogOut, Settings, BarChart3 } from "lucide-react";
 
 export default function AdminDashboard() {
-  const { state } = useStore();
+  const { state, dispatch } = useStore();
   const { toast } = useToast();
   const [, setLocation] = useLocation();
   const [users, setUsers] = useState<any[]>([]);
@@ -51,9 +51,15 @@ export default function AdminDashboard() {
   const handleLogout = async () => {
     try {
       await logOut();
+      dispatch({ type: "SET_USER", payload: null });
       setLocation("/login");
     } catch (error) {
       console.error("Error signing out:", error);
+      toast({
+        title: "Error",
+        description: "Failed to logout. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 

@@ -1,244 +1,252 @@
-# UB FoodHub - University of Batangas Mobile Food Ordering Platform
+# UB FoodHub - Mobile Web Application
 
-## 🎯 Overview
-UB FoodHub is a comprehensive mobile web application designed specifically for the University of Batangas canteen ecosystem. The platform streamlines the food ordering process for students, faculty, and staff by providing a digital solution that eliminates long queues and waiting times during limited break periods.
+## Overview
 
-## ✨ Key Features
+UB FoodHub is a comprehensive mobile web application designed for the University of Batangas canteen ecosystem. The system addresses challenges students face during limited break periods by providing a digital food ordering platform with pre-ordering, QR code-based pickup, and streamlined canteen operations.
 
-### 🔐 Authentication System
-- **Firebase Authentication** with Google sign-in integration (coming soon)
-- **Role-based access control** (Student, Stall Owner, Admin)
-- **Email-based registration** with validation
-- **Secure session management** with automatic logout
-- **Beautiful login interface** with UB maroon color theme
-
-### 🏪 Restaurant/Stall Management
-- **Real-time stall listings** from Firestore database
-- **Dynamic menu management** for stall owners
-- **Category-based filtering** (Filipino, Asian, Beverages, etc.)
-- **Stall status management** (active/inactive)
-- **Rating and review system**
-
-### 🛒 Shopping & Ordering
-- **Real-time cart management** with Firebase persistence
-- **QR code generation** for order pickup verification
-- **Order status tracking** (pending, preparing, ready, completed)
-- **Pre-ordering functionality** for scheduled pickup
-- **Bulk ordering system** for class representatives
-
-### 🔍 Search & Discovery
-- **Real-time search** across restaurants and menu items
-- **Category filtering** with dynamic counts
-- **Recent searches** with localStorage persistence
-- **Popular categories** based on actual data
-- **No hardcoded sample data** - everything loads from Firestore
-
-### 📱 Mobile-First Design
-- **Responsive design** optimized for mobile devices
-- **Bottom navigation** for easy thumb navigation
-- **Smooth animations** with Framer Motion
-- **Loading states** with logo animations
-- **Dark red/maroon theme** matching university branding
-
-### 🏛️ Administrative Features
-- **Admin Dashboard** for complete system oversight
-- **User management** with role assignments
-- **Order monitoring** and status updates
-- **Stall approval** and management system
-- **Analytics and reporting** capabilities
-
-## 🚀 Technology Stack
+## Technology Stack
 
 ### Frontend
 - **React 18** with TypeScript
 - **Vite** for fast development and optimized builds
-- **Tailwind CSS** with custom maroon university branding
+- **Tailwind CSS** with custom maroon university branding (#6d031e)
 - **Radix UI** primitives with shadcn/ui components
-- **TanStack Query** for server state management
+- **Framer Motion** for animations
 - **Wouter** for lightweight client-side routing
-- **Framer Motion** for smooth animations
-- **Firebase SDK** for authentication and Firestore
+- **TanStack Query** for server state management
+- **Firebase** for authentication and real-time database
 
-### Backend Integration
+### Backend
+- **Node.js** with Express.js
+- **TypeScript** with ESM modules
 - **Firebase Firestore** for real-time database
 - **Firebase Authentication** for user management
-- **Real-time subscriptions** for live data updates
-- **Server-side rendering** support with Express.js
 
-### Development Tools
-- **TypeScript** for type safety
-- **ESLint & Prettier** for code quality
-- **Drizzle ORM** for type-safe database operations
-- **Zod** for runtime validation
+## Features Overview
 
-## 📁 Project Structure
+### 🔐 Authentication System
+- **Firebase Authentication** with email/password
+- **Role-based access control**: Student, Stall Owner, Admin
+- **Real-time user state management**
+- **Secure logout functionality** across all dashboards
 
-```
-├── client/                 # React frontend application
-│   ├── src/
-│   │   ├── components/     # Reusable UI components
-│   │   ├── pages/          # Application pages/routes
-│   │   ├── lib/            # Utilities and configurations
-│   │   └── hooks/          # Custom React hooks
-├── server/                 # Express.js backend (legacy)
-├── shared/                 # Shared types and schemas
-├── attached_assets/        # Project assets and images
-└── public/                 # Static files
-```
+### 👨‍💼 Admin Dashboard
+- **User Management**
+  - Filter users by role (All, Students Only, Admins Only, Stall Owners Only)
+  - View user details including student IDs
+  - Delete non-admin user accounts
+  - Role-based badges and identification
+- **Stall Management**
+  - Create new food stalls
+  - Assign stall owners
+  - Activate/deactivate stalls
+  - Dynamic category assignment
+- **Category Management**
+  - Create custom food categories
+  - Remove custom categories (default categories protected)
+  - Real-time category updates across the system
+- **Analytics Dashboard**
+  - Total users count
+  - Total stalls count
+  - Active stalls monitoring
+  - System overview statistics
+- **Mobile-responsive design** with proper logout functionality
 
-## 🎨 Design System
+### 🏪 Stall Owner Dashboard
+- **Menu Item Management**
+  - Add new menu items
+  - Edit existing items
+  - Remove menu items
+  - Toggle item availability
+  - Mark items as popular
+  - **Customizable Options** (Extra Rice, No Onions, Spice Level, etc.)
+  - Image upload support
+  - Category assignment
+- **Order Management**
+  - Real-time order tracking
+  - Order status updates (Pending → Preparing → Ready → Completed)
+  - Order cancellation handling
+- **Analytics**
+  - Today's revenue tracking
+  - Daily order counts
+  - Pending orders monitoring
+  - Menu item statistics
+- **Settings Management**
+  - Stall information updates
+  - Operating hours configuration
+- **QR Code Integration** for order verification
 
-### Color Palette
-- **Primary**: Maroon/Dark Red (#B91C1C) - University signature color
-- **Secondary**: Various maroon shades (50-900)
-- **Accent**: Complementary colors for highlights
-- **Neutral**: Gray scales for text and backgrounds
+### 🎓 Student Features
+- **Restaurant Discovery**
+  - Browse available food stalls
+  - Category-based filtering
+  - Search functionality with real-time results
+  - Recent searches with localStorage persistence
+  - Rating and review system
+- **Menu Browsing**
+  - Category-filtered menu display
+  - Item availability status
+  - Popular item highlighting
+  - Price display with customization options
+- **Shopping Cart**
+  - Add items with quantity selection
+  - Customization options per item
+  - Real-time cart updates
+  - Special instructions support
+  - Delivery fee calculation
+- **Order Management**
+  - Order placement with QR code generation
+  - Real-time order tracking
+  - Order history with detailed view
+  - QR code display for pickup
+  - Order cancellation (when allowed)
+  - Reorder functionality
+- **Profile Management**
+  - Personal information display
+  - Student ID integration
+  - Logout functionality
+  - Order history access
 
-### Typography
-- **Headers**: Bold, clear hierarchy
-- **Body**: Readable, accessible fonts
-- **Buttons**: Medium weight, proper contrast
+### 📱 Mobile-First Design
+- **Bottom Navigation** for primary app navigation
+- **Responsive layouts** for all screen sizes
+- **Touch-optimized interfaces** with proper spacing
+- **Progressive Web App** capabilities
+- **Floating cart indicator** with item count
+- **Dark red/maroon theme** (#6d031e) throughout the application
 
-### Components
-- **Cards**: Rounded corners, subtle shadows
-- **Buttons**: Consistent maroon theme
-- **Forms**: Clean, validated inputs
-- **Navigation**: Mobile-optimized bottom nav
+### 🔄 Real-Time Features
+- **Live order status updates**
+- **Real-time menu availability**
+- **Dynamic cart synchronization**
+- **Instant notification system**
+- **Firebase Firestore subscriptions** for live data
 
-## 🔧 Installation & Setup
+### 🏷️ QR Code System
+- **Unique order codes** for each transaction
+- **Pickup verification** system
+- **Order tracking** integration
+- **Mobile-optimized QR display**
+
+## User Roles & Permissions
+
+### Student
+- Browse restaurants and menus
+- Add items to cart with customizations
+- Place orders and track status
+- View order history
+- Manage profile settings
+- Generate QR codes for pickup
+
+### Stall Owner
+- Manage menu items and customizations
+- Process incoming orders
+- Update order status
+- View sales analytics
+- Configure stall settings
+- Generate and verify QR codes
+
+### Admin
+- Manage all users and their roles
+- Create and manage food stalls
+- Assign stall owners
+- Create custom categories
+- View system-wide analytics
+- Monitor all activities
+
+## Database Schema
+
+### Collections
+- **users**: User accounts with role-based access
+- **stalls**: Food stall information and settings
+- **menuItems**: Menu items with customizations
+- **orders**: Order tracking and management
+- **cartItems**: Shopping cart functionality
+- **categories**: Dynamic category management
+
+## Installation & Setup
 
 ### Prerequisites
-- Node.js 18+ 
-- Firebase project setup
+- Node.js 18+
+- Firebase account
 - Replit account (for deployment)
 
 ### Environment Variables
-```env
-VITE_FIREBASE_API_KEY=your_firebase_api_key
+```
+VITE_FIREBASE_API_KEY=your_api_key
+VITE_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
 VITE_FIREBASE_PROJECT_ID=your_project_id
+VITE_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
+VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
 VITE_FIREBASE_APP_ID=your_app_id
 ```
 
-### Local Development
-```bash
-# Install dependencies
-npm install
+### Development Setup
+1. Clone the repository
+2. Install dependencies: `npm install`
+3. Configure Firebase environment variables
+4. Start development server: `npm run dev`
+5. Access application at `http://localhost:5000`
 
-# Start development server
-npm run dev
+## Recent Updates (July 06, 2025)
 
-# Build for production
-npm run build
-```
+### ✅ Admin Dashboard Enhancements
+- Fixed logout functionality with proper Firebase integration
+- Added mobile-responsive design with flexible layouts
+- Implemented user filtering system (All, Students, Admins, Stall Owners)
+- Created dynamic category management system
+- Updated color theme to use consistent #6d031e maroon color
+- Removed orders overview (reserved for stall owners only)
 
-## 📊 Database Schema
+### ✅ Stall Dashboard Improvements  
+- Added logout functionality with user state clearing
+- Implemented comprehensive menu item management
+- **Added customizable options system** for menu items (Extra Rice, No Onions, etc.)
+- Updated color scheme to match brand guidelines
+- Enhanced mobile compatibility
+- Real-time order processing capabilities
 
-### Collections
-- **users**: User profiles with role management
-- **stalls**: Restaurant/stall information
-- **menuItems**: Food items with categories and pricing
-- **orders**: Order tracking with QR codes
-- **cartItems**: Shopping cart persistence
-- **reviews**: Rating and feedback system
+### ✅ Student Experience Enhancements
+- Fixed profile page with proper order history navigation
+- Updated orders page with full functionality
+- Implemented working cart system with checkout process
+- Real-time order tracking with QR code generation
+- Consistent color theming throughout student interfaces
+- All navigation and functionality fully operational
 
-## 🔄 Recent Updates (January 2025)
+### ✅ Technical Improvements
+- Firebase authentication integration with proper logout
+- Real-time data synchronization across all components
+- Consistent #6d031e color theme application
+- Mobile-first responsive design implementation
+- Error handling and user feedback systems
+- Performance optimizations for real-time updates
 
-### Authentication Improvements
-- ✅ Fixed Firebase duplicate app initialization
-- ✅ Implemented proper logout functionality
-- ✅ Added role-based dashboard routing
-- ✅ Enhanced security with session management
+## Color Theme
+The application uses a consistent maroon color scheme:
+- **Primary Color**: #6d031e (Dark Red/Maroon)
+- **Hover States**: Red-700 variants
+- **Backgrounds**: Red-50, Red-100 for subtle accents
+- **Text**: Proper contrast ratios for accessibility
 
-### UI/UX Enhancements
-- ✅ Redesigned login page with maroon theme
-- ✅ Added smooth animations and transitions
-- ✅ Implemented mobile-responsive design
-- ✅ Created loading states with logo animations
+## Navigation Structure
+- **Students**: Home → Search → Cart → Orders → Profile
+- **Stall Owners**: Overview → Menu → Orders → Settings
+- **Admins**: Users → Stalls → Categories
 
-### Data Management
-- ✅ Removed all hardcoded sample data
-- ✅ Implemented real-time Firestore integration
-- ✅ Added dynamic search functionality
-- ✅ Created category-based filtering system
+## Deployment
+The application is configured for Replit deployment with:
+- Automatic build process
+- Environment variable configuration
+- Production optimization
+- Static file serving
 
-### Performance Optimizations
-- ✅ Optimized mobile compatibility
-- ✅ Reduced bundle size with code splitting
-- ✅ Implemented efficient state management
-- ✅ Added proper error boundaries
-
-## 🎯 User Roles & Permissions
-
-### Students
-- Browse restaurants and menus
-- Place orders and track status
-- Manage cart and favorites
-- View order history
-- Rate and review stalls
-
-### Stall Owners
-- Manage menu items and pricing
-- Process incoming orders
-- Update stall information
-- View sales analytics
-- Manage stall availability
-
-### Administrators
-- Oversee entire system
-- Manage user accounts
-- Monitor all orders
-- Approve new stalls
-- Access system analytics
-
-## 🚀 Deployment
-
-### Replit Deployment
-1. Import project to Replit
-2. Configure environment variables
-3. Run the "Start application" workflow
-4. Deploy using Replit's deployment system
-
-### Firebase Configuration
-1. Create Firebase project
-2. Enable Authentication and Firestore
-3. Add web app configuration
-4. Set up security rules
-
-## 🔐 Security Features
-
-- **Role-based access control** with Firebase Auth
-- **Data validation** with Zod schemas
-- **Secure API endpoints** with proper authentication
-- **XSS protection** with sanitized inputs
-- **CSRF protection** with proper tokens
-
-## 📱 Mobile Compatibility
-
-- **Responsive design** works on all screen sizes
-- **Touch-optimized** buttons and navigation
-- **Fast loading** with optimized images
-- **Offline capability** with service workers (planned)
-- **PWA features** for app-like experience
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit changes (`git commit -m 'Add amazing feature'`)
-4. Push to branch (`git push origin feature/amazing-feature`)
-5. Open Pull Request
-
-## 📞 Support
-
-For technical support or questions:
-- Create an issue in the repository
-- Contact the development team
-- Check the documentation wiki
-
-## 📄 License
-
-This project is developed for the University of Batangas. All rights reserved.
+## Support & Documentation
+For technical support or feature requests, contact the development team or submit issues through the project repository.
 
 ---
 
-**UB FoodHub** - Revolutionizing campus dining through technology 🍽️📱
+**Version**: 1.0.0  
+**Last Updated**: July 06, 2025  
+**Environment**: Production Ready  
+**Status**: All functionality operational across all user roles

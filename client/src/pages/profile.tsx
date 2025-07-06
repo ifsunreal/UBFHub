@@ -87,18 +87,18 @@ export default function Profile() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-maroon-800 text-white p-4">
+      <header className="bg-[#6d031e] text-white p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center">
             <button
               onClick={() => setLocation("/")}
-              className="mr-4 p-2 hover:bg-maroon-700 rounded-full"
+              className="mr-4 p-2 hover:bg-red-700 rounded-full"
             >
               <ArrowLeft className="h-5 w-5" />
             </button>
             <h1 className="text-lg font-semibold">Account</h1>
           </div>
-          <button className="text-maroon-200 hover:text-white">
+          <button className="text-red-200 hover:text-white">
             <Settings className="h-5 w-5" />
           </button>
         </div>
@@ -107,8 +107,8 @@ export default function Profile() {
       <div className="p-4 space-y-6 pb-20">
         {/* Profile Header */}
         <div className="flex items-center space-x-4">
-          <div className="w-16 h-16 bg-maroon-100 rounded-full flex items-center justify-center">
-            <span className="text-maroon-600 text-xl font-semibold">
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
+            <span className="text-[#6d031e] text-xl font-semibold">
               {state.user?.fullName?.charAt(0) || "U"}
             </span>
           </div>
@@ -174,12 +174,15 @@ export default function Profile() {
         </div>
 
         {/* Order History */}
-        <Card className="cursor-pointer hover:shadow-md transition-shadow">
+        <Card 
+          className="cursor-pointer hover:shadow-md transition-shadow"
+          onClick={() => setLocation("/orders")}
+        >
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
-                <div className="p-2 rounded-lg bg-maroon-50">
-                  <FileText className="h-5 w-5 text-maroon-600" />
+                <div className="p-2 rounded-lg bg-red-50">
+                  <FileText className="h-5 w-5 text-[#6d031e]" />
                 </div>
                 <div>
                   <p className="font-medium text-gray-800">Order History</p>
