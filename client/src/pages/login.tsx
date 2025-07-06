@@ -325,7 +325,7 @@ export default function Login() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-maroon-800 via-maroon-900 to-red-900 flex flex-col">
       {/* Header with Logo */}
-      <div className="flex-1 flex flex-col items-center justify-center px-4 py-8 relative min-h-0">
+      <div className="flex-1 flex flex-col items-center justify-center px-4 py-8 relative min-h-0 bg-[#6d031e]">
         <Button
           onClick={() => setAuthMode("social")}
           variant="ghost"
@@ -361,7 +361,6 @@ export default function Login() {
           </p>
         </motion.div>
       </div>
-
       {/* Bottom Form Card */}
       <motion.div
         initial={{ y: 100, opacity: 0 }}
