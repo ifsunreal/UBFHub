@@ -10,6 +10,7 @@ import {
   signInWithPopup,
   signInWithRedirect,
   getRedirectResult,
+  sendEmailVerification,
 } from "firebase/auth";
 import {
   getFirestore,
@@ -96,6 +97,17 @@ export const handleGoogleRedirectResult = async () => {
     return result;
   } catch (error: any) {
     console.error("Google redirect result error:", error);
+    throw error;
+  }
+};
+
+// Email verification function
+export const sendVerificationEmail = async (user: FirebaseUser) => {
+  try {
+    await sendEmailVerification(user);
+    return true;
+  } catch (error: any) {
+    console.error("Email verification error:", error);
     throw error;
   }
 };

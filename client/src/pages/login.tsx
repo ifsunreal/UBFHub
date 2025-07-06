@@ -5,11 +5,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useLocation } from "wouter";
 import { useStore } from "@/lib/store";
 import { useToast } from "@/hooks/use-toast";
-import { User, Mail, Lock, GraduationCap, Eye, EyeOff } from "lucide-react";
-import { signIn, signUp, createDocument, getDocument, onAuthStateChange, signInWithGoogle } from "@/lib/firebase";
+import { User, Mail, Lock, GraduationCap, Eye, EyeOff, Phone } from "lucide-react";
+import { signIn, signUp, createDocument, getDocument, onAuthStateChange, signInWithGoogle, sendVerificationEmail } from "@/lib/firebase";
 
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -35,7 +36,8 @@ export default function Login() {
     password: "",
     fullName: "",
     studentId: "",
-    role: "student",
+    phoneNumber: "",
+    agreeToTerms: false,
   });
 
   // Check for existing user authentication
@@ -147,10 +149,45 @@ export default function Login() {
 
   const handleEmailRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!registerData.email || !registerData.password || !registerData.fullName) {
+    
+    // Validate all required fields
+    if (!registerData.email || !registerData.password || !registerData.fullName || !registerData.studentId || !registerData.phoneNumber) {
       toast({
         title: "Missing Information",
         description: "Please fill in all required fields.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate email domain
+    const allowedDomains = ['@foodhub.com', '@ub.edu.ph'];
+    const emailDomain = registerData.email.substring(registerData.email.lastIndexOf('@'));
+    if (!allowedDomains.includes(emailDomain)) {
+      toast({
+        title: "Invalid Email Domain",
+        description: "Only @foodhub.com and @ub.edu.ph email addresses are allowed.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate Terms of Service agreement
+    if (!registerData.agreeToTerms) {
+      toast({
+        title: "Terms Required",
+        description: "You must agree to the Terms of Service and Privacy Policy.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate phone number (basic validation)
+    const phoneRegex = /^(\+63|0)[0-9]{10}$/;
+    if (!phoneRegex.test(registerData.phoneNumber)) {
+      toast({
+        title: "Invalid Phone Number",
+        description: "Please enter a valid Philippine phone number (e.g., +639123456789 or 09123456789).",
         variant: "destructive",
       });
       return;
@@ -171,30 +208,30 @@ export default function Login() {
       const userCredential = await signUp(registerData.email, registerData.password);
       const firebaseUser = userCredential.user;
       
+      // Send email verification
+      await sendVerificationEmail(firebaseUser);
+      
       const userData = {
         email: registerData.email,
         fullName: registerData.fullName,
-        studentId: registerData.studentId || null,
-        role: registerData.role,
+        studentId: registerData.studentId,
+        phoneNumber: registerData.phoneNumber,
+        role: "student", // Default role, admin can change later
         loyaltyPoints: 0,
+        emailVerified: false,
       };
       
       await createDocument("users", firebaseUser.uid, userData);
       
-      dispatch({ type: "SET_USER", payload: { id: firebaseUser.uid, ...userData } });
-      
       toast({
-        title: "Account created!",
-        description: `Welcome to UB FoodHub, ${registerData.fullName}!`,
+        title: "Account Created!",
+        description: `A verification email has been sent to ${registerData.email}. Please verify your email to complete registration.`,
       });
       
-      if (registerData.role === 'admin') {
-        setLocation("/admin");
-      } else if (registerData.role === 'stall_owner') {
-        setLocation("/stall-dashboard");
-      } else {
-        setLocation("/");
-      }
+      // Don't log the user in until email is verified
+      setAuthMode("social");
+      setIsSignUp(false);
+      
     } catch (error: any) {
       console.error("Registration error:", error);
       let errorMessage = "Please try again.";
@@ -246,12 +283,26 @@ export default function Login() {
           setLocation("/");
         }
       } else {
-        // New user - create account with default student role
+        // New user - validate email domain first
+        const email = firebaseUser.email || "";
+        const allowedDomains = ['@foodhub.com', '@ub.edu.ph'];
+        const emailDomain = email.substring(email.lastIndexOf('@'));
+        
+        if (!allowedDomains.includes(emailDomain)) {
+          // Sign out the user and show error
+          await firebaseUser.delete();
+          throw new Error("Only @foodhub.com and @ub.edu.ph email addresses are allowed.");
+        }
+        
+        // Create account with default student role - they need to complete profile
         const userData = {
-          email: firebaseUser.email || "",
+          email: email,
           fullName: firebaseUser.displayName || "",
-          studentId: "", // Can be updated later in profile
+          studentId: "", // Required - will need to be completed
+          phoneNumber: "", // Required - will need to be completed  
           role: "student",
+          emailVerified: firebaseUser.emailVerified,
+          profileComplete: false, // Flag to indicate profile needs completion
         };
         
         await createDocument("users", firebaseUser.uid, userData);
@@ -260,9 +311,10 @@ export default function Login() {
         
         toast({
           title: "Account created!",
-          description: `Welcome to UB FoodHub, ${userData.fullName}!`,
+          description: `Welcome to UB FoodHub! Please complete your profile with Student ID and phone number.`,
         });
         
+        // Redirect to profile completion or home
         setLocation("/");
       }
     } catch (error: any) {
@@ -698,13 +750,13 @@ export default function Login() {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="registerEmail" className="text-[#6d031e] font-medium">Email</Label>
+                  <Label htmlFor="registerEmail" className="text-[#6d031e] font-medium">Email *</Label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-3 h-4 w-4 text-[#6d031e]/60" />
                     <Input
                       id="registerEmail"
                       type="email"
-                      placeholder="Enter your email"
+                      placeholder="user@ub.edu.ph or user@foodhub.com"
                       className="pl-10 bg-white border-[#6d031e]/20 focus:border-[#6d031e] py-3 text-[#6d031e] placeholder:text-[#6d031e]/40"
                       value={registerData.email}
                       onChange={(e) => setRegisterData(prev => ({ ...prev, email: e.target.value }))}
@@ -715,7 +767,7 @@ export default function Login() {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="registerPassword" className="text-[#6d031e] font-medium">Password</Label>
+                  <Label htmlFor="registerPassword" className="text-[#6d031e] font-medium">Password *</Label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-3 h-4 w-4 text-[#6d031e]/60" />
                     <Input
@@ -740,7 +792,7 @@ export default function Login() {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="studentId" className="text-[#6d031e] font-medium">Student ID (Optional)</Label>
+                  <Label htmlFor="studentId" className="text-[#6d031e] font-medium">Student ID *</Label>
                   <div className="relative">
                     <GraduationCap className="absolute left-3 top-3 h-4 w-4 text-[#6d031e]/60" />
                     <Input
@@ -749,27 +801,77 @@ export default function Login() {
                       className="pl-10 bg-white border-[#6d031e]/20 focus:border-[#6d031e] py-3 text-[#6d031e] placeholder:text-[#6d031e]/40"
                       value={registerData.studentId}
                       onChange={(e) => setRegisterData(prev => ({ ...prev, studentId: e.target.value }))}
+                      required
                       disabled={isLoading}
                     />
                   </div>
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="role" className="text-[#6d031e] font-medium">Role</Label>
-                  <Select 
-                    value={registerData.role} 
-                    onValueChange={(value) => setRegisterData(prev => ({ ...prev, role: value }))}
+                  <Label htmlFor="phoneNumber" className="text-[#6d031e] font-medium">Phone Number *</Label>
+                  <div className="relative">
+                    <Phone className="absolute left-3 top-3 h-4 w-4 text-[#6d031e]/60" />
+                    <Input
+                      id="phoneNumber"
+                      type="tel"
+                      placeholder="+639123456789 or 09123456789"
+                      className="pl-10 bg-white border-[#6d031e]/20 focus:border-[#6d031e] py-3 text-[#6d031e] placeholder:text-[#6d031e]/40"
+                      value={registerData.phoneNumber}
+                      onChange={(e) => setRegisterData(prev => ({ ...prev, phoneNumber: e.target.value }))}
+                      required
+                      disabled={isLoading}
+                    />
+                  </div>
+                </div>
+                
+              </div>
+              
+              <div className="space-y-4">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="agreeToTerms"
+                    checked={registerData.agreeToTerms}
+                    onCheckedChange={(checked) => setRegisterData(prev => ({ ...prev, agreeToTerms: checked === true }))}
                     disabled={isLoading}
-                  >
-                    <SelectTrigger className="bg-white border-[#6d031e]/20 focus:border-[#6d031e] py-3 text-[#6d031e]">
-                      <SelectValue placeholder="Select your role" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="student">Student</SelectItem>
-                      <SelectItem value="stall_owner">Stall Owner</SelectItem>
-                      <SelectItem value="admin">Admin</SelectItem>
-                    </SelectContent>
-                  </Select>
+                    className="border-[#6d031e]/30 data-[state=checked]:bg-[#6d031e] data-[state=checked]:border-[#6d031e]"
+                  />
+                  <Label htmlFor="agreeToTerms" className="text-sm text-[#6d031e] leading-none">
+                    I agree to the{" "}
+                    <button
+                      type="button"
+                      className="underline hover:text-red-700 font-semibold"
+                      onClick={() => {
+                        // TODO: Open Terms of Service modal
+                        toast({
+                          title: "Terms of Service",
+                          description: "Terms of Service and Privacy Policy will be available soon.",
+                        });
+                      }}
+                    >
+                      Terms of Service
+                    </button>
+                    {" "}and{" "}
+                    <button
+                      type="button"
+                      className="underline hover:text-red-700 font-semibold"
+                      onClick={() => {
+                        // TODO: Open Privacy Policy modal
+                        toast({
+                          title: "Privacy Policy", 
+                          description: "Terms of Service and Privacy Policy will be available soon.",
+                        });
+                      }}
+                    >
+                      Privacy Policy
+                    </button>
+                    {" *"}
+                  </Label>
+                </div>
+                
+                <div className="text-xs text-[#6d031e]/70 bg-[#6d031e]/5 p-3 rounded-lg">
+                  <strong>Email Requirements:</strong> Only @foodhub.com and @ub.edu.ph email addresses are allowed.
+                  <br />
+                  <strong>Verification:</strong> A verification email will be sent to complete registration.
                 </div>
               </div>
               
