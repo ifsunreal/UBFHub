@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Minus, Plus, Trash2, Tag, Utensils, MapPin } from "lucide-react";
+import { ArrowLeft, Minus, Plus, Trash2, Tag, Utensils, MapPin, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -179,20 +179,24 @@ export default function Cart() {
       </motion.div>
 
       <div className="p-4 space-y-4 pb-32">
-        {/* Delivery Time */}
+        {/* Pickup/Delivery Option */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="bg-white rounded-lg p-4"
         >
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-pink-100 rounded-lg flex items-center justify-center">
-              🛵
+            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+              🏪
             </div>
-            <div>
-              <h3 className="font-medium">Delivery time</h3>
-              <p className="text-sm text-gray-600">Standard (25-40 mins)</p>
-              <Button variant="link" className="p-0 h-auto text-sm text-pink-600">Change</Button>
+            <div className="flex-1">
+              <h3 className="font-medium">Pickup</h3>
+              <p className="text-sm text-gray-600">Ready in 15-25 mins</p>
+              <Button variant="link" className="p-0 h-auto text-sm text-[#6d031e]">Change</Button>
+            </div>
+            <div className="flex items-center gap-2 text-sm text-gray-400">
+              <Lock className="w-4 h-4" />
+              <span>Delivery unavailable</span>
             </div>
           </div>
         </motion.div>
@@ -267,7 +271,19 @@ export default function Cart() {
           transition={{ delay: 0.3 }}
           className="bg-white rounded-lg p-4"
         >
-          <Button variant="link" className="w-full justify-start p-0 h-auto text-gray-700">
+          <Button 
+            variant="link" 
+            className="w-full justify-start p-0 h-auto text-gray-700"
+            onClick={() => {
+              // Get first item's stall ID to navigate back to that stall
+              const firstStall = cartItems[0]?.stallId;
+              if (firstStall) {
+                setLocation(`/restaurant/${firstStall}`);
+              } else {
+                setLocation("/");
+              }
+            }}
+          >
             <Plus className="w-4 h-4 mr-2" />
             Add more items
           </Button>
@@ -287,23 +303,23 @@ export default function Cart() {
             <span>₱{subtotal.toFixed(2)}</span>
           </div>
           <div className="flex justify-between">
-            <span>Standard delivery</span>
+            <span>Service fee</span>
             <span>₱{deliveryFee.toFixed(2)}</span>
           </div>
           
-          {/* Apply Voucher */}
-          <Button variant="outline" className="w-full justify-start text-gray-700">
-            <Tag className="w-4 h-4 mr-2" />
+          {/* Apply Voucher - Locked */}
+          <Button variant="outline" className="w-full justify-start text-gray-400 cursor-not-allowed" disabled>
+            <Lock className="w-4 h-4 mr-2" />
             Apply a voucher
           </Button>
 
-          {/* Cutlery Option */}
+          {/* Cutlery Option - Information for stall owner */}
           <div className="flex items-center justify-between py-2">
             <div className="flex items-center gap-2">
               <Utensils className="w-4 h-4 text-gray-600" />
               <div>
                 <p className="font-medium">Cutlery</p>
-                <p className="text-xs text-gray-600">No cutlery provided. Thanks for reducing waste!</p>
+                <p className="text-xs text-gray-600">Cutlery needs will be communicated to the stall owner</p>
               </div>
             </div>
             <Switch checked={!noCutlery} onCheckedChange={(checked) => setNoCutlery(!checked)} />
@@ -318,16 +334,16 @@ export default function Cart() {
           </div>
         </motion.div>
 
-        {/* Delivery Instructions */}
+        {/* Instructions */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6 }}
           className="bg-white rounded-lg p-4"
         >
-          <Label className="text-base font-medium">Delivery instructions (Optional)</Label>
+          <Label className="text-base font-medium">Instructions (Optional)</Label>
           <Input
-            placeholder="Note to rider - e.g. landmark"
+            placeholder="Special requests for the stall owner"
             value={deliveryInstructions}
             onChange={(e) => setDeliveryInstructions(e.target.value)}
             className="mt-2"
@@ -347,7 +363,7 @@ export default function Cart() {
             disabled={isProcessing || cartItems.length === 0}
             className="w-full bg-[#6d031e] hover:bg-red-700 text-white py-4 text-lg font-medium"
           >
-            {isProcessing ? "Processing..." : "Review payment and address"}
+            {isProcessing ? "Processing..." : "Checkout"}
           </Button>
         </div>
       </motion.div>
