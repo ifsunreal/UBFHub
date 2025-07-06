@@ -10,7 +10,7 @@ import { useStore } from "@/lib/store";
 import { useToast } from "@/hooks/use-toast";
 import { User, Mail, Lock, GraduationCap, Eye, EyeOff } from "lucide-react";
 import { signIn, signUp, createDocument, getDocument, onAuthStateChange } from "@/lib/firebase";
-import { createInitialAccounts } from "@/lib/create-admin-accounts";
+
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function Login() {
@@ -40,14 +40,12 @@ export default function Login() {
 
   // Check for existing user authentication
   useEffect(() => {
-    createInitialAccounts();
-
     const unsubscribe = onAuthStateChange(async (firebaseUser) => {
       if (firebaseUser) {
         try {
           const userDoc = await getDocument("users", firebaseUser.uid);
           if (userDoc.exists()) {
-            const userData = { id: firebaseUser.uid, ...userDoc.data() };
+            const userData = { id: firebaseUser.uid, ...userDoc.data() } as any;
             dispatch({ type: "SET_USER", payload: userData });
             
             const role = userData.role;

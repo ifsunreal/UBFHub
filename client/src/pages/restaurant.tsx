@@ -145,23 +145,23 @@ export default function Restaurant() {
         animate={{ y: 0 }}
         className="bg-white shadow-sm sticky top-0 z-40"
       >
-        <div className="flex items-center justify-between p-4">
+        <div className="flex items-center justify-between p-4 bg-[#820d2a]">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => setLocation("/")}
-            className="rounded-full"
+            className="rounded-full text-white hover:bg-red-700"
           >
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" className="rounded-full">
+            <Button variant="ghost" size="icon" className="rounded-full text-white hover:bg-red-700">
               <Info className="w-5 h-5" />
             </Button>
-            <Button variant="ghost" size="icon" className="rounded-full">
+            <Button variant="ghost" size="icon" className="rounded-full text-white hover:bg-red-700">
               <Heart className="w-5 h-5" />
             </Button>
-            <Button variant="ghost" size="icon" className="rounded-full">
+            <Button variant="ghost" size="icon" className="rounded-full text-white hover:bg-red-700">
               <Share className="w-5 h-5" />
             </Button>
           </div>

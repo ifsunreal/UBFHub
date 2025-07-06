@@ -82,7 +82,7 @@ export default function SearchPage() {
             variant="ghost"
             size="sm"
             onClick={() => setLocation("/")}
-            className="p-2"
+            className="p-2 text-white hover:bg-red-700"
           >
             <ArrowLeft className="w-5 h-5" />
           </Button>
