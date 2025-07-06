@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { useStore } from "@/lib/store";
 import { subscribeToCollection, addDocument, updateDocument, deleteDocument, getCollection } from "@/lib/firebase";
@@ -32,8 +33,21 @@ export default function AdminDashboard() {
     description: "",
     category: "",
     ownerId: "",
+    image: "",
     isActive: true,
   });
+
+  // Edit stall form
+  const [editingStall, setEditingStall] = useState<any>(null);
+  const [editStall, setEditStall] = useState({
+    name: "",
+    description: "",
+    category: "",
+    ownerId: "",
+    image: "",
+    isActive: true,
+  });
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   useEffect(() => {
     // Subscribe to real-time data
@@ -87,6 +101,7 @@ export default function AdminDashboard() {
         description: "",
         category: "",
         ownerId: "",
+        image: "",
         isActive: true,
       });
     } catch (error: any) {
@@ -97,6 +112,61 @@ export default function AdminDashboard() {
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleEditStall = (stall: any) => {
+    setEditingStall(stall);
+    setEditStall({
+      name: stall.name || "",
+      description: stall.description || "",
+      category: stall.category || "",
+      ownerId: stall.ownerId || "",
+      image: stall.image || "",
+      isActive: stall.isActive ?? true,
+    });
+    setIsEditDialogOpen(true);
+  };
+
+  const handleUpdateStall = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingStall) return;
+    
+    setIsLoading(true);
+    try {
+      await updateDocument("stalls", editingStall.id, editStall);
+      
+      toast({
+        title: "Stall updated successfully",
+        description: "The food stall has been updated.",
+      });
+      
+      setIsEditDialogOpen(false);
+      setEditingStall(null);
+    } catch (error: any) {
+      toast({
+        title: "Error updating stall",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDeleteStall = async (stallId: string) => {
+    try {
+      await deleteDocument("stalls", stallId);
+      toast({
+        title: "Stall deleted successfully",
+        description: "The food stall has been removed from the system.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error deleting stall",
+        description: error.message,
+        variant: "destructive",
+      });
     }
   };
 
@@ -394,6 +464,15 @@ export default function AdminDashboard() {
                     />
                   </div>
                   <div>
+                    <Label htmlFor="image">Image URL</Label>
+                    <Input
+                      id="image"
+                      value={newStall.image}
+                      onChange={(e) => setNewStall({ ...newStall, image: e.target.value })}
+                      placeholder="https://example.com/stall-image.jpg"
+                    />
+                  </div>
+                  <div>
                     <Label htmlFor="owner">Assign Owner</Label>
                     <Select
                       value={newStall.ownerId}
@@ -439,12 +518,48 @@ export default function AdminDashboard() {
                       </div>
                       <div className="flex items-center gap-2">
                         <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleEditStall(stall)}
+                          className="border-gray-300 hover:bg-gray-100"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button
                           variant={stall.isActive ? "secondary" : "default"}
                           size="sm"
                           onClick={() => handleToggleStallStatus(stall.id, stall.isActive)}
                         >
                           {stall.isActive ? "Deactivate" : "Activate"}
                         </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="text-red-700 border-red-300 hover:bg-red-100"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Delete Stall</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Are you sure you want to delete "{stall.name}"? This action cannot be undone.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => handleDeleteStall(stall.id)}
+                                className="bg-red-600 hover:bg-red-700"
+                              >
+                                Delete
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                       </div>
                     </div>
                   ))}
@@ -456,6 +571,97 @@ export default function AdminDashboard() {
 
         </Tabs>
       </div>
+
+      {/* Edit Stall Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit Stall</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleUpdateStall} className="space-y-4">
+            <div>
+              <Label htmlFor="editStallName">Stall Name</Label>
+              <Input
+                id="editStallName"
+                value={editStall.name}
+                onChange={(e) => setEditStall({ ...editStall, name: e.target.value })}
+                placeholder="Food Paradise"
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="editCategory">Category</Label>
+              <Select
+                value={editStall.category}
+                onValueChange={(value) => setEditStall({ ...editStall, category: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map((category) => (
+                    <SelectItem key={category} value={category}>{category}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="editDescription">Description</Label>
+              <Input
+                id="editDescription"
+                value={editStall.description}
+                onChange={(e) => setEditStall({ ...editStall, description: e.target.value })}
+                placeholder="Authentic Filipino dishes with a modern twist"
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="editImage">Image URL</Label>
+              <Input
+                id="editImage"
+                value={editStall.image}
+                onChange={(e) => setEditStall({ ...editStall, image: e.target.value })}
+                placeholder="https://example.com/stall-image.jpg"
+              />
+            </div>
+            <div>
+              <Label htmlFor="editOwner">Assign Owner</Label>
+              <Select
+                value={editStall.ownerId}
+                onValueChange={(value) => setEditStall({ ...editStall, ownerId: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select stall owner" />
+                </SelectTrigger>
+                <SelectContent>
+                  {stallOwners.map((owner) => (
+                    <SelectItem key={owner.id} value={owner.id}>
+                      {owner.fullName} ({owner.email})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex gap-2 pt-4">
+              <Button
+                type="submit"
+                disabled={isLoading}
+                className="flex-1 bg-[#6d031e] hover:bg-red-700"
+              >
+                {isLoading ? "Updating..." : "Update Stall"}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsEditDialogOpen(false)}
+                className="border-red-300 text-red-700 hover:bg-red-100"
+              >
+                Cancel
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

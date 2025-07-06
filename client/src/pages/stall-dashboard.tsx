@@ -304,58 +304,53 @@ export default function StallDashboard() {
   const todayRevenue = todayOrders.reduce((sum, order) => sum + (order.totalAmount || 0), 0);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-900 via-red-800 to-red-900">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-red-800 shadow-lg border-b border-red-700">
-        <div className="p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center">
-                <div className="text-red-800 text-lg font-bold">UB</div>
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-white">Stall Dashboard</h1>
-                <p className="text-red-200 text-sm">Welcome back, {state.user?.fullName}</p>
-              </div>
+      <div className="bg-[#6d031e] text-white">
+        <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div className="flex items-center gap-3">
+            <Settings className="w-6 h-6 sm:w-8 sm:h-8" />
+            <div>
+              <h1 className="text-lg sm:text-xl font-bold">Stall Dashboard</h1>
+              <p className="text-red-100 text-sm">Welcome back, {state.user?.fullName}</p>
             </div>
-            <Button
-              onClick={handleLogout}
-              variant="outline"
-              size="sm"
-              className="border-red-400 text-white hover:bg-red-600 hover:border-red-500"
-            >
-              <LogOut className="w-4 h-4 mr-2" />
-              Logout
-            </Button>
+          </div>
+          <Button
+            onClick={handleLogout}
+            variant="ghost"
+            className="text-white hover:bg-red-700 w-full sm:w-auto"
+          >
+            <LogOut className="w-4 h-4 mr-2" />
+            Logout
+          </Button>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto p-4 sm:p-6">
+        {/* Navigation Tabs */}
+        <div className="mb-6">
+          <div className="flex space-x-1 bg-gray-100 rounded-lg p-1">
+            {[
+              { id: "overview", label: "Overview", icon: TrendingUp },
+              { id: "menu", label: "Menu", icon: Package },
+              { id: "orders", label: "Orders", icon: Clock }
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex-1 flex items-center justify-center gap-2 py-2 px-4 rounded-md text-sm font-medium transition-all ${
+                  activeTab === tab.id
+                    ? "bg-[#6d031e] text-white shadow-sm"
+                    : "text-gray-600 hover:bg-gray-200"
+                }`}
+              >
+                <tab.icon className="w-4 h-4" />
+                {tab.label}
+              </button>
+            ))}
           </div>
         </div>
-      </div>
 
-      {/* Navigation Tabs */}
-      <div className="p-4">
-        <div className="flex space-x-1 bg-red-700/50 rounded-lg p-1">
-          {[
-            { id: "overview", label: "Overview", icon: TrendingUp },
-            { id: "menu", label: "Menu", icon: Package },
-            { id: "orders", label: "Orders", icon: Clock }
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex-1 flex items-center justify-center gap-2 py-2 px-4 rounded-md text-sm font-medium transition-all ${
-                activeTab === tab.id
-                  ? "bg-white text-red-800 shadow-sm"
-                  : "text-red-100 hover:bg-red-600/70 hover:text-white"
-              }`}
-            >
-              <tab.icon className="w-4 h-4" />
-              {tab.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="p-4 space-y-6">
         {/* Overview Tab */}
         {activeTab === "overview" && (
           <motion.div
@@ -364,58 +359,50 @@ export default function StallDashboard() {
             className="space-y-6"
           >
             {/* Stats Cards */}
-            <div className="grid grid-cols-2 gap-4">
-              <Card className="bg-white/95 backdrop-blur">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                      <DollarSign className="w-6 h-6 text-green-600" />
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-600">Today's Revenue</p>
-                      <p className="text-xl font-bold text-red-800">₱{todayRevenue.toFixed(2)}</p>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
+              <Card>
+                <CardContent className="p-4 sm:p-6">
+                  <div className="flex items-center">
+                    <DollarSign className="w-6 h-6 sm:w-8 sm:h-8 text-[#6d031e]" />
+                    <div className="ml-3 sm:ml-4">
+                      <p className="text-xs sm:text-sm font-medium text-gray-600">Today's Revenue</p>
+                      <p className="text-lg sm:text-2xl font-bold text-gray-900">₱{todayRevenue.toFixed(2)}</p>
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
-              <Card className="bg-white/95 backdrop-blur">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                      <Package className="w-6 h-6 text-blue-600" />
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-600">Today's Orders</p>
-                      <p className="text-xl font-bold text-red-800">{todayOrders.length}</p>
+              <Card>
+                <CardContent className="p-4 sm:p-6">
+                  <div className="flex items-center">
+                    <Package className="w-6 h-6 sm:w-8 sm:h-8 text-[#6d031e]" />
+                    <div className="ml-3 sm:ml-4">
+                      <p className="text-xs sm:text-sm font-medium text-gray-600">Today's Orders</p>
+                      <p className="text-lg sm:text-2xl font-bold text-gray-900">{todayOrders.length}</p>
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
-              <Card className="bg-white/95 backdrop-blur">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-                      <Clock className="w-6 h-6 text-yellow-600" />
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-600">Pending Orders</p>
-                      <p className="text-xl font-bold text-red-800">{pendingOrders.length}</p>
+              <Card>
+                <CardContent className="p-4 sm:p-6">
+                  <div className="flex items-center">
+                    <Clock className="w-6 h-6 sm:w-8 sm:h-8 text-[#6d031e]" />
+                    <div className="ml-3 sm:ml-4">
+                      <p className="text-xs sm:text-sm font-medium text-gray-600">Pending Orders</p>
+                      <p className="text-lg sm:text-2xl font-bold text-gray-900">{pendingOrders.length}</p>
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
-              <Card className="bg-white/95 backdrop-blur">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                      <Users className="w-6 h-6 text-purple-600" />
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-600">Menu Items</p>
-                      <p className="text-xl font-bold text-red-800">{menuItems.length}</p>
+              <Card>
+                <CardContent className="p-4 sm:p-6">
+                  <div className="flex items-center">
+                    <Users className="w-6 h-6 sm:w-8 sm:h-8 text-[#6d031e]" />
+                    <div className="ml-3 sm:ml-4">
+                      <p className="text-xs sm:text-sm font-medium text-gray-600">Menu Items</p>
+                      <p className="text-lg sm:text-2xl font-bold text-gray-900">{menuItems.length}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -423,16 +410,16 @@ export default function StallDashboard() {
             </div>
 
             {/* Recent Orders */}
-            <Card className="bg-white/95 backdrop-blur">
+            <Card>
               <CardHeader>
-                <CardTitle className="text-red-800">Recent Orders</CardTitle>
+                <CardTitle className="text-[#6d031e]">Recent Orders</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
                   {orders.slice(0, 5).map((order) => (
                     <div key={order.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                       <div>
-                        <p className="font-medium text-red-800">Order {order.qrCode}</p>
+                        <p className="font-medium text-gray-900">Order {order.qrCode}</p>
                         <p className="text-sm text-gray-600">₱{order.totalAmount?.toFixed(2)}</p>
                       </div>
                       <Badge
@@ -461,14 +448,14 @@ export default function StallDashboard() {
             className="space-y-4"
           >
             <div className="flex justify-between items-center">
-              <h2 className="text-xl font-bold text-white">Menu Management</h2>
+              <h2 className="text-xl font-bold text-[#6d031e]">Menu Management</h2>
               <Button
                 onClick={() => {
                   resetForm();
                   setEditingItem(null);
                   setIsMenuDialogOpen(true);
                 }}
-                className="bg-white text-red-800 hover:bg-red-50"
+                className="bg-[#6d031e] text-white hover:bg-red-700"
               >
                 <Plus className="w-4 h-4 mr-2" />
                 Add Item
@@ -477,7 +464,7 @@ export default function StallDashboard() {
 
             <div className="grid gap-4">
               {menuItems.map((item) => (
-                <Card key={item.id} className="bg-white/95 backdrop-blur">
+                <Card key={item.id}>
                   <CardContent className="p-4">
                     <div className="flex items-center gap-4">
                       <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center">
@@ -489,11 +476,11 @@ export default function StallDashboard() {
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
-                          <h3 className="font-semibold text-red-800">{item.name}</h3>
+                          <h3 className="font-semibold text-[#6d031e]">{item.name}</h3>
                           {item.isPopular && <Star className="w-4 h-4 text-yellow-500 fill-current" />}
                         </div>
                         <p className="text-sm text-gray-600">{item.description}</p>
-                        <p className="text-lg font-bold text-red-700">₱{item.price?.toFixed(2)}</p>
+                        <p className="text-lg font-bold text-gray-900">₱{item.price?.toFixed(2)}</p>
                         {item.customizations && item.customizations.length > 0 && (
                           <div className="flex flex-wrap gap-1 mt-2">
                             {item.customizations.map((custom: any, index: number) => (
@@ -541,19 +528,19 @@ export default function StallDashboard() {
             animate={{ opacity: 1, y: 0 }}
             className="space-y-4"
           >
-            <h2 className="text-xl font-bold text-white">Order Management</h2>
+            <h2 className="text-xl font-bold text-[#6d031e]">Order Management</h2>
             
             <div className="space-y-4">
               {orders.map((order) => (
-                <Card key={order.id} className="bg-white/95 backdrop-blur">
+                <Card key={order.id}>
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="font-semibold text-red-800">Order {order.qrCode}</p>
+                        <p className="font-semibold text-[#6d031e]">Order {order.qrCode}</p>
                         <p className="text-sm text-gray-600">
                           {new Date(order.createdAt?.toDate ? order.createdAt.toDate() : order.createdAt).toLocaleString()}
                         </p>
-                        <p className="text-lg font-bold text-red-700">₱{order.totalAmount?.toFixed(2)}</p>
+                        <p className="text-lg font-bold text-gray-900">₱{order.totalAmount?.toFixed(2)}</p>
                       </div>
                       <div className="flex items-center gap-2">
                         <Select
@@ -585,7 +572,7 @@ export default function StallDashboard() {
       <Dialog open={isMenuDialogOpen} onOpenChange={setIsMenuDialogOpen}>
         <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-red-800">
+            <DialogTitle className="text-[#6d031e]">
               {editingItem ? "Edit Menu Item" : "Add Menu Item"}
             </DialogTitle>
           </DialogHeader>
@@ -719,7 +706,7 @@ export default function StallDashboard() {
             <div className="flex gap-2 pt-4">
               <Button
                 onClick={handleSaveMenuItem}
-                className="flex-1 bg-red-800 hover:bg-red-700"
+                className="flex-1 bg-[#6d031e] hover:bg-red-700"
               >
                 <Save className="w-4 h-4 mr-2" />
                 Save Item
