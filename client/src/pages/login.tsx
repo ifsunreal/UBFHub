@@ -229,6 +229,16 @@ export default function Login() {
       <div className="min-h-screen bg-gradient-to-br from-maroon-800 via-maroon-900 to-red-900 flex flex-col">
         {/* Hero Section with Logo and Illustration */}
         <div className="flex-1 flex flex-col items-center justify-center px-4 py-8 relative min-h-0 bg-[#6d031e] overflow-hidden">
+          {/* Campus background image */}
+          <div className="absolute inset-0 overflow-hidden">
+            <img 
+              src="/campus-bg.png" 
+              alt="Campus Background" 
+              className="w-full h-full object-cover opacity-15"
+            />
+            <div className="absolute inset-0 bg-[#6d031e]/60"></div>
+          </div>
+          
           {/* Liquid glass background effect */}
           <div className="absolute inset-0 overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-white/3 backdrop-blur-sm"></div>
@@ -394,6 +404,16 @@ export default function Login() {
     <div className="min-h-screen bg-gradient-to-br from-maroon-800 via-maroon-900 to-red-900 flex flex-col">
       {/* Header with Logo */}
       <div className="flex-1 flex flex-col items-center justify-center px-4 py-8 relative min-h-0 bg-[#6d031e] overflow-hidden">
+        {/* Campus background image */}
+        <div className="absolute inset-0 overflow-hidden">
+          <img 
+            src="/campus-bg.png" 
+            alt="Campus Background" 
+            className="w-full h-full object-cover opacity-15"
+          />
+          <div className="absolute inset-0 bg-[#6d031e]/60"></div>
+        </div>
+        
         {/* Liquid glass background effect */}
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-white/3 backdrop-blur-sm"></div>
