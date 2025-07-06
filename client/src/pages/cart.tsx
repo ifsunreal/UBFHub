@@ -122,14 +122,13 @@ export default function Cart() {
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="bg-white shadow-sm sticky top-0 z-40">
-          <div className="flex items-center p-4">
+          <div className="flex items-center p-4 bg-[#820d2a]">
             <Button variant="ghost" size="icon" onClick={() => setLocation("/")} className="mr-3">
               <ArrowLeft className="w-5 h-5" />
             </Button>
             <h1 className="text-lg font-semibold">Cart</h1>
           </div>
         </div>
-        
         <div className="flex flex-col items-center justify-center min-h-[60vh] p-8">
           <div className="text-6xl mb-4">🛒</div>
           <h2 className="text-xl font-semibold text-gray-900 mb-2">Your cart is empty</h2>
@@ -138,7 +137,6 @@ export default function Cart() {
             Browse Restaurants
           </Button>
         </div>
-        
         <BottomNav />
       </div>
     );
