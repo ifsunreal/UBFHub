@@ -439,7 +439,7 @@ export default function Restaurant() {
                   </div>
                   <Button
                     onClick={handleAddToCart}
-                    className="bg-gray-800 hover:bg-gray-900 text-white px-8"
+                    className="hover:bg-gray-900 text-white px-8 bg-[#820d2a]"
                   >
                     Add to cart
                   </Button>
