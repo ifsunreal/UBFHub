@@ -8,7 +8,7 @@ import { Switch } from "@/components/ui/switch";
 import { useLocation } from "wouter";
 import { useStore } from "@/lib/store";
 import { useToast } from "@/hooks/use-toast";
-import { NotificationService } from "@/lib/notifications";
+import { createNotification } from "@/lib/notifications";
 import BottomNav from "@/components/layout/bottom-nav";
 
 export default function Settings() {

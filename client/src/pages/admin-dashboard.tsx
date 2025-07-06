@@ -14,6 +14,9 @@ import { subscribeToCollection, addDocument, updateDocument, deleteDocument, get
 import { logOut } from "@/lib/firebase";
 import { useLocation } from "wouter";
 import { Users, Store, Plus, Edit, Trash2, LogOut, Settings, BarChart3 } from "lucide-react";
+import PenaltyManagement from "@/components/penalties/penalty-management";
+import BroadcastNotification from "@/components/admin/broadcast-notification";
+import NotificationBell from "@/components/notifications/notification-bell";
 
 export default function AdminDashboard() {
   const { state, dispatch } = useStore();
@@ -290,10 +293,13 @@ export default function AdminDashboard() {
               <p className="text-red-100 text-sm">Welcome, {state.user?.fullName}</p>
             </div>
           </div>
-          <Button onClick={handleLogout} variant="ghost" className="text-white hover:bg-red-700 w-full sm:w-auto">
-            <LogOut className="w-4 h-4 mr-2" />
-            Logout
-          </Button>
+          <div className="flex items-center gap-2">
+            <NotificationBell />
+            <Button onClick={handleLogout} variant="ghost" className="text-white hover:bg-red-700 w-full sm:w-auto">
+              <LogOut className="w-4 h-4 mr-2" />
+              Logout
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -350,10 +356,12 @@ export default function AdminDashboard() {
         </div>
 
         <Tabs defaultValue="users" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 text-xs sm:text-sm">
+          <TabsList className="grid w-full grid-cols-5 text-xs sm:text-sm">
             <TabsTrigger value="users">Users</TabsTrigger>
             <TabsTrigger value="stalls">Stalls</TabsTrigger>
             <TabsTrigger value="categories">Categories</TabsTrigger>
+            <TabsTrigger value="penalties">Penalties</TabsTrigger>
+            <TabsTrigger value="notifications">Notify</TabsTrigger>
           </TabsList>
 
           <TabsContent value="users" className="space-y-4">
@@ -634,6 +642,37 @@ export default function AdminDashboard() {
             </Card>
           </TabsContent>
 
+          <TabsContent value="penalties" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Penalty Management</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <PenaltyManagement />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="notifications" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <CardTitle>Send Notifications</CardTitle>
+                  <BroadcastNotification />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-8">
+                  <p className="text-gray-600 mb-4">
+                    Send notifications to all users or specific groups using the "Send Notification" button above.
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    Notifications will appear in users' notification bells and help keep them informed about important updates.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
         </Tabs>
       </div>

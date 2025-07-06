@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { subscribeToQuery, updateDocument, deleteDocument, addDocument } from "@/lib/firebase";
 import BottomNav from "@/components/layout/bottom-nav";
 import QRCode from "@/components/qr-code";
+import OrderCancellationRequest from "@/components/orders/order-cancellation-request";
 
 const orderStatusConfig = {
   pending: {
@@ -285,14 +286,12 @@ export default function Orders() {
                   )}
                   
                   {canCancel && (
-                    <Button
-                      onClick={() => cancelOrder(order.id)}
-                      variant="destructive"
-                      className="flex-1"
-                      disabled={isLoading}
-                    >
-                      Cancel Order
-                    </Button>
+                    <OrderCancellationRequest 
+                      order={order}
+                      onRequestSubmitted={() => {
+                        // Refresh orders list - subscription will handle the update
+                      }}
+                    />
                   )}
                   
                   {order.status === 'ready' && (

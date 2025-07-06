@@ -10,6 +10,7 @@ import FloatingCart from "@/components/floating-cart";
 import LoadingIndicator from "@/components/loading-indicator";
 import LoadingOverlay from "@/components/loading-overlay";
 import NotificationCenter from "@/components/notifications/notification-center";
+import NotificationBell from "@/components/notifications/notification-bell";
 import { Search, MapPin, Clock, Star, Award, Bell } from "lucide-react";
 import { subscribeToCollection } from "@/lib/firebase";
 import { useStore } from "@/lib/store";
@@ -90,21 +91,7 @@ export default function Home() {
                   {state.user?.loyaltyPoints || 0} pts
                 </span>
               </div>
-              <button
-                onClick={() => setShowNotifications(true)}
-                className="relative p-1 hover:bg-maroon-600 rounded-full transition-colors"
-              >
-                <Bell className="w-5 h-5" />
-                {unreadNotificationCount > 0 && (
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center"
-                  >
-                    {unreadNotificationCount > 9 ? "9+" : unreadNotificationCount}
-                  </motion.div>
-                )}
-              </button>
+              <NotificationBell />
             </div>
           </div>
 

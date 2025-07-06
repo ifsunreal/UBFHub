@@ -38,6 +38,8 @@ import {
   logOut 
 } from "@/lib/firebase";
 import { useLocation } from "wouter";
+import NotificationBell from "@/components/notifications/notification-bell";
+import CancellationRequestManagement from "@/components/orders/cancellation-request-management";
 
 export default function StallDashboard() {
   const { state, dispatch } = useStore();
@@ -450,14 +452,17 @@ export default function StallDashboard() {
               )}
             </div>
           </div>
-          <Button
-            onClick={handleLogout}
-            variant="ghost"
-            className="text-white hover:bg-red-700 w-full sm:w-auto"
-          >
-            <LogOut className="w-4 h-4 mr-2" />
-            Logout
-          </Button>
+          <div className="flex items-center gap-2">
+            <NotificationBell />
+            <Button
+              onClick={handleLogout}
+              variant="ghost"
+              className="text-white hover:bg-red-700 w-full sm:w-auto"
+            >
+              <LogOut className="w-4 h-4 mr-2" />
+              Logout
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -469,6 +474,7 @@ export default function StallDashboard() {
               { id: "overview", label: "Overview", icon: TrendingUp },
               { id: "menu", label: "Menu", icon: Package },
               { id: "orders", label: "Orders", icon: Clock },
+              { id: "cancellations", label: "Cancellations", icon: Settings },
               { id: "reviews", label: "Reviews", icon: Star },
               { id: "statistics", label: "Statistics", icon: TrendingUp }
             ].map((tab) => (
@@ -980,6 +986,17 @@ export default function StallDashboard() {
                 </Card>
               ))}
             </div>
+          </motion.div>
+        )}
+
+        {/* Cancellations Tab */}
+        {activeTab === "cancellations" && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-6"
+          >
+            <CancellationRequestManagement stallId={userStall?.id || ""} />
           </motion.div>
         )}
 
