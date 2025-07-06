@@ -50,6 +50,11 @@ export default function StallDashboard() {
   const [isMenuDialogOpen, setIsMenuDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
   const [activeTab, setActiveTab] = useState("overview");
+  const [orderFilter, setOrderFilter] = useState("all");
+  const [menuFilter, setMenuFilter] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedOrder, setSelectedOrder] = useState<any>(null);
+  const [showOrderDetails, setShowOrderDetails] = useState(false);
   const [itemForm, setItemForm] = useState({
     name: "",
     description: "",
@@ -281,6 +286,30 @@ export default function StallDashboard() {
     }
   };
 
+  const cancelOrder = async (orderId: string) => {
+    try {
+      await updateDocument("orders", orderId, { 
+        status: "cancelled",
+        updatedAt: new Date()
+      });
+      toast({
+        title: "Order Cancelled",
+        description: "Order has been cancelled successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to cancel order",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const viewOrderDetails = (order: any) => {
+    setSelectedOrder(order);
+    setShowOrderDetails(true);
+  };
+
   const addCustomization = () => {
     setItemForm(prev => ({
       ...prev,
@@ -321,6 +350,38 @@ export default function StallDashboard() {
     setIsMenuDialogOpen(true);
   };
 
+  // Smart filtering functions
+  const getUniqueCategories = () => {
+    const categories = menuItems.map(item => item.category).filter(Boolean);
+    return [...new Set(categories)];
+  };
+
+  const filteredMenuItems = menuItems.filter(item => {
+    const matchesCategory = menuFilter === "all" || item.category === menuFilter;
+    const matchesSearch = !searchQuery || item.name.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
+
+  const filteredOrders = orders.filter(order => {
+    if (orderFilter === "all") return true;
+    return order.status === orderFilter;
+  });
+
+  // Revenue calculations - only count completed orders
+  const completedOrders = orders.filter(order => order.status === 'completed');
+  const todayCompletedOrders = completedOrders.filter(order => {
+    const orderDate = new Date(order.createdAt?.toDate ? order.createdAt.toDate() : order.createdAt);
+    const today = new Date();
+    return orderDate.toDateString() === today.toDateString();
+  });
+
+  const currentMonth = new Date().getMonth();
+  const currentYear = new Date().getFullYear();
+  const monthlyCompletedOrders = completedOrders.filter(order => {
+    const orderDate = new Date(order.createdAt?.toDate ? order.createdAt.toDate() : order.createdAt);
+    return orderDate.getMonth() === currentMonth && orderDate.getFullYear() === currentYear;
+  });
+
   // Calculate stats
   const todayOrders = orders.filter(order => {
     const orderDate = new Date(order.createdAt?.toDate ? order.createdAt.toDate() : order.createdAt);
@@ -329,7 +390,28 @@ export default function StallDashboard() {
   });
 
   const pendingOrders = orders.filter(order => order.status === 'pending');
-  const todayRevenue = todayOrders.reduce((sum, order) => sum + (order.totalAmount || 0), 0);
+  const preparingOrders = orders.filter(order => order.status === 'preparing');
+  
+  // Revenue from completed orders only
+  const todayRevenue = todayCompletedOrders.reduce((sum, order) => sum + (order.totalAmount || 0), 0);
+  const monthlyRevenue = monthlyCompletedOrders.reduce((sum, order) => sum + (order.totalAmount || 0), 0);
+
+  // Popular items analysis
+  const itemPopularity = completedOrders.reduce((acc, order) => {
+    order.items?.forEach((item: any) => {
+      const itemName = item.name;
+      if (!acc[itemName]) {
+        acc[itemName] = { count: 0, revenue: 0 };
+      }
+      acc[itemName].count += item.quantity;
+      acc[itemName].revenue += (item.price * item.quantity);
+    });
+    return acc;
+  }, {} as Record<string, {count: number, revenue: number}>);
+
+  const popularItems = Object.entries(itemPopularity)
+    .sort(([,a], [,b]) => b.count - a.count)
+    .slice(0, 5);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -375,7 +457,8 @@ export default function StallDashboard() {
             {[
               { id: "overview", label: "Overview", icon: TrendingUp },
               { id: "menu", label: "Menu", icon: Package },
-              { id: "orders", label: "Orders", icon: Clock }
+              { id: "orders", label: "Orders", icon: Clock },
+              { id: "statistics", label: "Statistics", icon: Star }
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -467,6 +550,19 @@ export default function StallDashboard() {
                           <p className="text-sm text-gray-600">
                             {order.createdAt?.toDate ? new Date(order.createdAt.toDate()).toLocaleString() : 'Just now'}
                           </p>
+                          {order.customerName && (
+                            <p className="text-sm text-[#6d031e] font-medium">Customer: {order.customerName}</p>
+                          )}
+                          {order.paymentMethod && (
+                            <div className="mt-1">
+                              <span className="text-sm text-gray-600">Payment: {order.paymentMethod}</span>
+                              {order.paymentMethod === 'cash' && order.cashAmount && (
+                                <span className="text-sm text-green-600 ml-2">
+                                  Cash: ₱{order.cashAmount} | Change: ₱{(order.cashAmount - order.totalAmount).toFixed(2)}
+                                </span>
+                              )}
+                            </div>
+                          )}
                         </div>
                         <Badge
                           className={
@@ -521,24 +617,44 @@ export default function StallDashboard() {
                       </div>
 
                       {/* Order Actions */}
-                      <div className="flex gap-2 mt-3">
+                      <div className="flex gap-2 mt-3 flex-wrap">
                         {order.status === 'pending' && (
-                          <Button
-                            size="sm"
-                            onClick={() => updateOrderStatus(order.id, 'preparing')}
-                            className="bg-blue-600 hover:bg-blue-700 text-white"
-                          >
-                            Accept Order
-                          </Button>
+                          <>
+                            <Button
+                              size="sm"
+                              onClick={() => updateOrderStatus(order.id, 'preparing')}
+                              className="bg-blue-600 hover:bg-blue-700 text-white"
+                            >
+                              Accept Order
+                            </Button>
+                            <Button
+                              size="sm"
+                              onClick={() => cancelOrder(order.id)}
+                              variant="destructive"
+                              className="bg-red-600 hover:bg-red-700 text-white"
+                            >
+                              Cancel Order
+                            </Button>
+                          </>
                         )}
                         {order.status === 'preparing' && (
-                          <Button
-                            size="sm"
-                            onClick={() => updateOrderStatus(order.id, 'ready')}
-                            className="bg-green-600 hover:bg-green-700 text-white"
-                          >
-                            Mark Ready
-                          </Button>
+                          <>
+                            <Button
+                              size="sm"
+                              onClick={() => updateOrderStatus(order.id, 'ready')}
+                              className="bg-green-600 hover:bg-green-700 text-white"
+                            >
+                              Mark Ready
+                            </Button>
+                            <Button
+                              size="sm"
+                              onClick={() => cancelOrder(order.id)}
+                              variant="destructive"
+                              className="bg-red-600 hover:bg-red-700 text-white"
+                            >
+                              Cancel Order
+                            </Button>
+                          </>
                         )}
                         {order.status === 'ready' && (
                           <Button
@@ -549,6 +665,14 @@ export default function StallDashboard() {
                             Complete Order
                           </Button>
                         )}
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => viewOrderDetails(order)}
+                          className="border-[#6d031e] text-[#6d031e] hover:bg-[#6d031e] hover:text-white"
+                        >
+                          View Details
+                        </Button>
                       </div>
                     </div>
                   ))}
@@ -571,7 +695,7 @@ export default function StallDashboard() {
             animate={{ opacity: 1, y: 0 }}
             className="space-y-4"
           >
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
               <h2 className="text-xl font-bold text-[#6d031e]">Menu Management</h2>
               <Button
                 onClick={() => {
@@ -586,8 +710,58 @@ export default function StallDashboard() {
               </Button>
             </div>
 
+            {/* Smart Filtering for Menu */}
+            <Card className="mb-6">
+              <CardContent className="p-4">
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <div className="flex-1">
+                    <Label htmlFor="menu-search">Search Items</Label>
+                    <Input
+                      id="menu-search"
+                      placeholder="Search menu items..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="mt-1"
+                    />
+                  </div>
+                  <div className="sm:w-48">
+                    <Label htmlFor="menu-category">Category</Label>
+                    <Select value={menuFilter} onValueChange={setMenuFilter}>
+                      <SelectTrigger className="mt-1">
+                        <SelectValue placeholder="All Categories" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Categories</SelectItem>
+                        {Array.from(new Set(menuItems.map(item => item.category).filter(Boolean))).map((category) => (
+                          <SelectItem key={category} value={category}>
+                            {category}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="flex items-center gap-4 mt-3 text-sm text-gray-600">
+                  <span>Showing {filteredMenuItems.length} of {menuItems.length} items</span>
+                  {(searchQuery || menuFilter !== "all") && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setSearchQuery("");
+                        setMenuFilter("all");
+                      }}
+                      className="text-[#6d031e] hover:bg-red-50"
+                    >
+                      Clear Filters
+                    </Button>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
             <div className="grid gap-4">
-              {menuItems.map((item) => (
+              {filteredMenuItems.map((item) => (
                 <Card key={item.id}>
                   <CardContent className="p-4">
                     <div className="flex items-center gap-4">
@@ -654,8 +828,47 @@ export default function StallDashboard() {
           >
             <h2 className="text-xl font-bold text-[#6d031e]">Order Management</h2>
             
+            {/* Smart Filtering for Orders */}
+            <Card className="mb-6">
+              <CardContent className="p-4">
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <div className="sm:w-48">
+                    <Label htmlFor="order-filter">Filter by Status</Label>
+                    <Select value={orderFilter} onValueChange={setOrderFilter}>
+                      <SelectTrigger className="mt-1">
+                        <SelectValue placeholder="All Orders" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Orders</SelectItem>
+                        <SelectItem value="pending">Pending</SelectItem>
+                        <SelectItem value="preparing">Preparing</SelectItem>
+                        <SelectItem value="ready">Ready for Pickup</SelectItem>
+                        <SelectItem value="completed">Completed</SelectItem>
+                        <SelectItem value="cancelled">Cancelled</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="flex items-center gap-4 mt-3 text-sm text-gray-600">
+                  <span>Showing {filteredOrders.length} of {orders.length} orders</span>
+                  <span>Pending: {pendingOrders.length}</span>
+                  <span>Preparing: {preparingOrders.length}</span>
+                  {orderFilter !== "all" && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setOrderFilter("all")}
+                      className="text-[#6d031e] hover:bg-red-50"
+                    >
+                      Clear Filter
+                    </Button>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+            
             <div className="space-y-4">
-              {orders.map((order) => (
+              {filteredOrders.map((order) => (
                 <Card key={order.id}>
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between">
@@ -688,6 +901,190 @@ export default function StallDashboard() {
                 </Card>
               ))}
             </div>
+          </motion.div>
+        )}
+
+        {/* Statistics Tab */}
+        {activeTab === "statistics" && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-6"
+          >
+            <h2 className="text-xl font-bold text-[#6d031e]">Statistics & Analytics</h2>
+            
+            {/* Revenue Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <Card>
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">Today's Revenue</p>
+                      <p className="text-2xl font-bold text-green-600">₱{todayRevenue.toFixed(2)}</p>
+                    </div>
+                    <DollarSign className="w-8 h-8 text-green-600" />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2">From {todayCompletedOrders.length} completed orders</p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">Monthly Revenue</p>
+                      <p className="text-2xl font-bold text-[#6d031e]">₱{monthlyRevenue.toFixed(2)}</p>
+                    </div>
+                    <TrendingUp className="w-8 h-8 text-[#6d031e]" />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2">From {monthlyCompletedOrders.length} completed orders</p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">Total Orders</p>
+                      <p className="text-2xl font-bold text-blue-600">{orders.length}</p>
+                    </div>
+                    <Package className="w-8 h-8 text-blue-600" />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2">{completedOrders.length} completed successfully</p>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Popular Items */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-[#6d031e] flex items-center gap-2">
+                  <Star className="w-5 h-5" />
+                  Popular Items
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {popularItems.length > 0 ? (
+                  <div className="space-y-4">
+                    {popularItems.map(([itemName, stats], index) => (
+                      <div key={itemName} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 bg-[#6d031e] text-white rounded-full flex items-center justify-center text-sm font-bold">
+                            {index + 1}
+                          </div>
+                          <div>
+                            <p className="font-medium text-gray-900">{itemName}</p>
+                            <p className="text-sm text-gray-600">{stats.count} orders</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-semibold text-[#6d031e]">₱{stats.revenue.toFixed(2)}</p>
+                          <p className="text-xs text-gray-500">Revenue</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    <Star className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                    <p>No sales data available yet</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Order Status Breakdown */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-[#6d031e]">Order Status Breakdown</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Pending</span>
+                      <Badge className="bg-yellow-100 text-yellow-800">{pendingOrders.length}</Badge>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Preparing</span>
+                      <Badge className="bg-blue-100 text-blue-800">{preparingOrders.length}</Badge>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Ready</span>
+                      <Badge className="bg-green-100 text-green-800">{orders.filter(o => o.status === 'ready').length}</Badge>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Completed</span>
+                      <Badge className="bg-gray-100 text-gray-800">{completedOrders.length}</Badge>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Cancelled</span>
+                      <Badge className="bg-red-100 text-red-800">{orders.filter(o => o.status === 'cancelled').length}</Badge>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-[#6d031e]">Menu Performance</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Total Menu Items</span>
+                      <span className="font-semibold">{menuItems.length}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Available Items</span>
+                      <span className="font-semibold text-green-600">{menuItems.filter(item => item.isAvailable).length}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Popular Items</span>
+                      <span className="font-semibold text-yellow-600">{menuItems.filter(item => item.isPopular).length}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Categories</span>
+                      <span className="font-semibold">{Array.from(new Set(menuItems.map(item => item.category))).length}</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Monthly Revenue Trend (Placeholder for future chart) */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-[#6d031e]">Performance Summary</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-8">
+                  <TrendingUp className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+                  <h3 className="text-lg font-semibold text-gray-700 mb-2">Revenue Analytics</h3>
+                  <p className="text-gray-600 mb-4">
+                    This month you've earned <span className="font-bold text-[#6d031e]">₱{monthlyRevenue.toFixed(2)}</span> from {monthlyCompletedOrders.length} completed orders.
+                  </p>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                    <div className="bg-gray-50 p-3 rounded">
+                      <p className="text-gray-600">Avg. Order Value</p>
+                      <p className="font-bold text-lg">₱{monthlyCompletedOrders.length > 0 ? (monthlyRevenue / monthlyCompletedOrders.length).toFixed(2) : '0.00'}</p>
+                    </div>
+                    <div className="bg-gray-50 p-3 rounded">
+                      <p className="text-gray-600">Orders Today</p>
+                      <p className="font-bold text-lg">{todayOrders.length}</p>
+                    </div>
+                    <div className="bg-gray-50 p-3 rounded">
+                      <p className="text-gray-600">Completion Rate</p>
+                      <p className="font-bold text-lg">{orders.length > 0 ? ((completedOrders.length / orders.length) * 100).toFixed(1) : 0}%</p>
+                    </div>
+                    <div className="bg-gray-50 p-3 rounded">
+                      <p className="text-gray-600">Best Seller</p>
+                      <p className="font-bold text-lg">{popularItems.length > 0 ? popularItems[0][0].slice(0, 12) + '...' : 'N/A'}</p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </motion.div>
         )}
       </div>
@@ -844,6 +1241,163 @@ export default function StallDashboard() {
               </Button>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Order Details Modal */}
+      <Dialog open={showOrderDetails} onOpenChange={setShowOrderDetails}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-[#6d031e]">
+              Order Details - {selectedOrder?.qrCode}
+            </DialogTitle>
+          </DialogHeader>
+          
+          {selectedOrder && (
+            <div className="space-y-4">
+              {/* Customer Info */}
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <h3 className="font-semibold text-gray-900 mb-2">Customer Information</h3>
+                <div className="space-y-1 text-sm">
+                  <p><span className="font-medium">Name:</span> {selectedOrder.customerName || 'Not provided'}</p>
+                  <p><span className="font-medium">Order Date:</span> {new Date(selectedOrder.createdAt?.toDate ? selectedOrder.createdAt.toDate() : selectedOrder.createdAt).toLocaleString()}</p>
+                  <p><span className="font-medium">Status:</span> 
+                    <Badge className={
+                      selectedOrder.status === 'pending' ? 'bg-yellow-100 text-yellow-800 ml-2' :
+                      selectedOrder.status === 'preparing' ? 'bg-blue-100 text-blue-800 ml-2' :
+                      selectedOrder.status === 'ready' ? 'bg-green-100 text-green-800 ml-2' :
+                      selectedOrder.status === 'completed' ? 'bg-gray-100 text-gray-800 ml-2' :
+                      'bg-red-100 text-red-800 ml-2'
+                    }>
+                      {selectedOrder.status?.toUpperCase()}
+                    </Badge>
+                  </p>
+                </div>
+              </div>
+
+              {/* Order Items */}
+              <div>
+                <h3 className="font-semibold text-gray-900 mb-3">Ordered Items</h3>
+                <div className="space-y-3">
+                  {selectedOrder.items?.map((item: any, index: number) => (
+                    <div key={index} className="border rounded-lg p-3">
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <p className="font-medium">{item.name}</p>
+                          <p className="text-sm text-gray-600">Quantity: {item.quantity}</p>
+                          <p className="text-sm text-gray-600">Unit Price: ₱{item.price?.toFixed(2)}</p>
+                          {item.customizations && item.customizations.length > 0 && (
+                            <div className="mt-2">
+                              <p className="text-sm font-medium text-gray-700">Add-ons:</p>
+                              <div className="flex flex-wrap gap-1 mt-1">
+                                {item.customizations.map((custom: any, i: number) => (
+                                  <Badge key={i} variant="outline" className="text-xs">
+                                    {custom.name} {custom.price > 0 ? `+₱${custom.price}` : ''}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                        <div className="text-right">
+                          <p className="font-semibold">₱{((item.price + (item.customizations?.reduce((sum: number, c: any) => sum + c.price, 0) || 0)) * item.quantity).toFixed(2)}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Payment Information */}
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <h3 className="font-semibold text-gray-900 mb-2">Payment Information</h3>
+                <div className="space-y-1 text-sm">
+                  <p><span className="font-medium">Method:</span> {selectedOrder.paymentMethod || 'Not specified'}</p>
+                  {selectedOrder.paymentMethod === 'cash' && selectedOrder.cashAmount && (
+                    <>
+                      <p><span className="font-medium">Cash Amount:</span> ₱{selectedOrder.cashAmount.toFixed(2)}</p>
+                      <p><span className="font-medium">Change Required:</span> ₱{(selectedOrder.cashAmount - selectedOrder.totalAmount).toFixed(2)}</p>
+                    </>
+                  )}
+                  <p><span className="font-medium">Total Amount:</span> <span className="font-bold text-[#6d031e]">₱{selectedOrder.totalAmount?.toFixed(2)}</span></p>
+                </div>
+              </div>
+
+              {/* Special Instructions */}
+              {selectedOrder.specialInstructions && (
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h3 className="font-semibold text-gray-900 mb-2">Special Instructions</h3>
+                  <p className="text-sm text-gray-700">{selectedOrder.specialInstructions}</p>
+                </div>
+              )}
+
+              {/* Order Actions */}
+              <div className="flex gap-2 pt-4 border-t">
+                {selectedOrder.status === 'pending' && (
+                  <>
+                    <Button
+                      onClick={() => {
+                        updateOrderStatus(selectedOrder.id, 'preparing');
+                        setShowOrderDetails(false);
+                      }}
+                      className="bg-blue-600 hover:bg-blue-700 text-white"
+                    >
+                      Accept Order
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        cancelOrder(selectedOrder.id);
+                        setShowOrderDetails(false);
+                      }}
+                      variant="destructive"
+                    >
+                      Cancel Order
+                    </Button>
+                  </>
+                )}
+                {selectedOrder.status === 'preparing' && (
+                  <>
+                    <Button
+                      onClick={() => {
+                        updateOrderStatus(selectedOrder.id, 'ready');
+                        setShowOrderDetails(false);
+                      }}
+                      className="bg-green-600 hover:bg-green-700 text-white"
+                    >
+                      Mark Ready
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        cancelOrder(selectedOrder.id);
+                        setShowOrderDetails(false);
+                      }}
+                      variant="destructive"
+                    >
+                      Cancel Order
+                    </Button>
+                  </>
+                )}
+                {selectedOrder.status === 'ready' && (
+                  <Button
+                    onClick={() => {
+                      updateOrderStatus(selectedOrder.id, 'completed');
+                      setShowOrderDetails(false);
+                    }}
+                    className="bg-gray-600 hover:bg-gray-700 text-white"
+                  >
+                    Complete Order
+                  </Button>
+                )}
+                <Button
+                  variant="outline"
+                  onClick={() => setShowOrderDetails(false)}
+                  className="border-[#6d031e] text-[#6d031e] hover:bg-[#6d031e] hover:text-white"
+                >
+                  Close
+                </Button>
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>
