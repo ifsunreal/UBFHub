@@ -443,7 +443,7 @@ export default function Login() {
                   <button
                     type="button"
                     onClick={() => setIsSignUp(true)}
-                    className="text-red-300 hover:text-white font-medium"
+                    className="hover:text-white text-[#6d031e] font-bold"
                     disabled={isLoading}
                   >
                     Sign up
