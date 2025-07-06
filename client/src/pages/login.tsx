@@ -313,7 +313,7 @@ export default function Login() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1.4, duration: 0.5 }}
-            className="text-xs text-red-200/70 text-center mt-8"
+            className="text-xs text-center mt-8 text-[#6d031e] font-bold"
           >
             By signing up you agree to our Terms and Conditions and Privacy Policy.
           </motion.p>
