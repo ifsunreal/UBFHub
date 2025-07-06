@@ -116,6 +116,9 @@ UB FoodHub is a comprehensive mobile web application designed for the University
 - Added beautiful animations with logo animations and loading states
 - Google authentication button design (functionality coming soon)
 - Email-based login and registration with proper validation
+- Updated to dark red/maroon background that blends with logo
+- Improved text contrast with white labels and red accent colors
+- Enhanced form styling with semi-transparent backgrounds
 
 ### Real-Time Data & Search (July 06, 2025)
 - Removed ALL hardcoded sample data from search page
@@ -129,6 +132,7 @@ UB FoodHub is a comprehensive mobile web application designed for the University
 - Added loading animations with logo and spinning circles
 - Implemented maroon color theme throughout the application
 - Enhanced animations for login, search, and navigation
+- Dark theme login page with improved visual hierarchy and readability
 
 ## Changelog
 
