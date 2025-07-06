@@ -411,12 +411,12 @@ export default function Login() {
               ease: "easeInOut",
             }
           }}
-          className="w-20 h-20 mx-auto mb-4 flex items-center justify-center relative z-10"
+          className="w-28 h-28 mx-auto mb-4 flex items-center justify-center relative z-10"
         >
           <img 
             src="/logo.png" 
             alt="UB FoodHub Logo" 
-            className="w-16 h-16 object-contain drop-shadow-lg"
+            className="w-24 h-24 object-contain"
           />
         </motion.div>
         <motion.div
