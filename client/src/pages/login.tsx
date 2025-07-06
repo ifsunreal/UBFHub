@@ -299,7 +299,8 @@ export default function Login() {
             >
               <Button
                 onClick={() => setAuthMode("email")}
-                className="w-full bg-red-600 hover:bg-red-700 text-white py-4 rounded-xl shadow-sm transition-all"
+                className="w-full text-white py-4 rounded-xl shadow-sm transition-all"
+                style={{ backgroundColor: '#6d031e' }}
                 disabled={isLoading}
               >
                 <Mail className="w-5 h-5 mr-3" />
