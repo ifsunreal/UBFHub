@@ -115,10 +115,19 @@ export default function StallDashboard() {
   }, [stallId]);
 
   const handleSaveMenuItem = async () => {
-    if (!itemForm.name || !itemForm.price || !stallId) {
+    if (!itemForm.name || !itemForm.price) {
       toast({
         title: "Error",
         description: "Please fill in all required fields",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!stallId) {
+      toast({
+        title: "Error",
+        description: "Stall information not found. Please try refreshing the page.",
         variant: "destructive",
       });
       return;
@@ -313,7 +322,7 @@ export default function StallDashboard() {
               onClick={handleLogout}
               variant="outline"
               size="sm"
-              className="border-red-600 text-red-100 hover:bg-red-700 hover:text-white"
+              className="border-red-400 text-white hover:bg-red-600 hover:border-red-500"
             >
               <LogOut className="w-4 h-4 mr-2" />
               Logout
@@ -336,7 +345,7 @@ export default function StallDashboard() {
               className={`flex-1 flex items-center justify-center gap-2 py-2 px-4 rounded-md text-sm font-medium transition-all ${
                 activeTab === tab.id
                   ? "bg-white text-red-800 shadow-sm"
-                  : "text-red-100 hover:bg-red-600/50"
+                  : "text-red-100 hover:bg-red-600/70 hover:text-white"
               }`}
             >
               <tab.icon className="w-4 h-4" />
@@ -504,6 +513,7 @@ export default function StallDashboard() {
                           size="sm"
                           variant="outline"
                           onClick={() => editMenuItem(item)}
+                          className="border-gray-300 hover:bg-gray-100"
                         >
                           <Edit className="w-4 h-4" />
                         </Button>
@@ -511,7 +521,7 @@ export default function StallDashboard() {
                           size="sm"
                           variant="outline"
                           onClick={() => deleteMenuItem(item.id)}
-                          className="text-red-600 hover:bg-red-50"
+                          className="text-red-700 border-red-300 hover:bg-red-100 hover:border-red-400"
                         >
                           <Trash2 className="w-4 h-4" />
                         </Button>
@@ -651,7 +661,7 @@ export default function StallDashboard() {
                   size="sm"
                   variant="outline"
                   onClick={addCustomization}
-                  className="text-red-600 border-red-200 hover:bg-red-50"
+                  className="text-red-700 border-red-300 hover:bg-red-100 hover:border-red-400"
                 >
                   <Plus className="w-4 h-4 mr-1" />
                   Add Option
@@ -678,7 +688,7 @@ export default function StallDashboard() {
                     size="sm"
                     variant="outline"
                     onClick={() => removeCustomization(index)}
-                    className="text-red-600 hover:bg-red-50"
+                    className="text-red-700 border-red-300 hover:bg-red-100"
                   >
                     <Trash2 className="w-4 h-4" />
                   </Button>
@@ -717,7 +727,7 @@ export default function StallDashboard() {
               <Button
                 variant="outline"
                 onClick={() => setIsMenuDialogOpen(false)}
-                className="border-red-200 text-red-600 hover:bg-red-50"
+                className="border-red-300 text-red-700 hover:bg-red-100 hover:border-red-400"
               >
                 Cancel
               </Button>
