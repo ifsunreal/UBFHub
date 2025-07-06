@@ -64,6 +64,9 @@ export default function Checkout() {
       
       await addDocument("orders", {
         userId: state.user?.id,
+        customerName: state.user?.fullName || "Student",
+        customerEmail: state.user?.email || "Not provided",
+        studentId: state.user?.studentId || "Not provided",
         stallId: cartItems[0]?.stallId,
         stallName: stallInfo?.name || "Unknown Stall",
         status: "pending",

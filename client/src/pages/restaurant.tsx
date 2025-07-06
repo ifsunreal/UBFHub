@@ -231,25 +231,10 @@ export default function Restaurant() {
       >
         <h3 className="font-semibold text-gray-900 mb-3">Student Reviews</h3>
         <div className="space-y-3">
-          <div className="border-b pb-3">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
-                <span className="text-[#6d031e] text-sm font-semibold">A</span>
-              </div>
-              <div>
-                <p className="font-medium text-sm">Anonymous Student</p>
-                <div className="flex items-center gap-1">
-                  {[1,2,3,4,5].map(star => (
-                    <Star key={star} className="w-3 h-3 text-yellow-400 fill-current" />
-                  ))}
-                </div>
-              </div>
-            </div>
-            <p className="text-sm text-gray-600">Great food! Fast pickup and always fresh. The chicken tenders are amazing!</p>
-          </div>
-          
-          <div className="text-center py-4">
-            <p className="text-sm text-gray-600 mb-2">Only students who have ordered can leave reviews</p>
+          <div className="text-center py-8">
+            <Star className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+            <h3 className="text-lg font-semibold text-gray-700 mb-2">No Reviews Yet</h3>
+            <p className="text-sm text-gray-600 mb-4">Only students who have ordered can leave reviews</p>
             <Button variant="outline" size="sm">
               Order first to review
             </Button>

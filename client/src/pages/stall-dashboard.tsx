@@ -94,8 +94,8 @@ export default function StallDashboard() {
                 description: 'Authentic Korean-style fried chicken with Filipino twist',
                 category: 'Filipino',
                 image: 'https://images.unsplash.com/photo-1562967914-608f82629710?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=300',
-                rating: 5.0,
-                reviewCount: 2000,
+                rating: 0,
+                reviewCount: 0,
                 deliveryTime: '15-40 min',
                 priceRange: '₱109-299',
                 isActive: true,
@@ -1346,9 +1346,9 @@ export default function StallDashboard() {
               <div className="bg-gray-50 p-4 rounded-lg">
                 <h3 className="font-semibold text-gray-900 mb-2">Customer Information</h3>
                 <div className="space-y-1 text-sm">
-                  <p><span className="font-medium">Name:</span> {selectedOrder.customerName || selectedOrder.userName || selectedOrder.fullName || 'Student'}</p>
-                  <p><span className="font-medium">Student ID:</span> {selectedOrder.studentId || selectedOrder.userId || 'Not provided'}</p>
-                  <p><span className="font-medium">Email:</span> {selectedOrder.userEmail || selectedOrder.email || 'Not provided'}</p>
+                  <p><span className="font-medium">Name:</span> {selectedOrder.customerName || 'Student'}</p>
+                  <p><span className="font-medium">Student ID:</span> {selectedOrder.studentId || 'Not provided'}</p>
+                  <p><span className="font-medium">Email:</span> {selectedOrder.customerEmail || 'Not provided'}</p>
                   <p><span className="font-medium">Order Date:</span> {new Date(selectedOrder.createdAt?.toDate ? selectedOrder.createdAt.toDate() : selectedOrder.createdAt).toLocaleString()}</p>
                   <p><span className="font-medium">Status:</span> 
                     <Badge className={
