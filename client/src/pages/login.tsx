@@ -339,7 +339,7 @@ export default function Login() {
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ delay: 0.2, duration: 0.3 }}
-          className="w-20 h-20 mx-auto mb-4 bg-red-700/50 rounded-2xl flex items-center justify-center shadow-xl border border-red-600/30"
+          className="w-20 h-20 mx-auto mb-4 rounded-2xl flex items-center justify-center shadow-xl border border-red-600/30 bg-[#6d031e]"
         >
           <img 
             src="/logo.png" 
