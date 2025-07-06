@@ -380,14 +380,14 @@ export default function Login() {
             >
               <div className="space-y-3">
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-white font-medium">Email</Label>
+                  <Label htmlFor="email" className="text-[#6d031e] font-medium">Email</Label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-3 h-4 w-4 text-red-300" />
+                    <Mail className="absolute left-3 top-3 h-4 w-4 text-[#6d031e]/60" />
                     <Input
                       id="email"
                       type="email"
                       placeholder="Enter your email"
-                      className="pl-10 bg-white/10 border-red-600/30 focus:border-red-400 h-12 text-white placeholder:text-red-200"
+                      className="pl-10 bg-white border-[#6d031e]/20 focus:border-[#6d031e] h-12 text-[#6d031e] placeholder:text-[#6d031e]/40"
                       value={loginData.email}
                       onChange={(e) => setLoginData(prev => ({ ...prev, email: e.target.value }))}
                       required
@@ -397,14 +397,14 @@ export default function Login() {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="password" className="text-white font-medium">Password</Label>
+                  <Label htmlFor="password" className="text-[#6d031e] font-medium">Password</Label>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-3 h-4 w-4 text-red-300" />
+                    <Lock className="absolute left-3 top-3 h-4 w-4 text-[#6d031e]/60" />
                     <Input
                       id="password"
                       type={showPassword ? "text" : "password"}
                       placeholder="Enter your password"
-                      className="pl-10 pr-10 bg-white/10 border-red-600/30 focus:border-red-400 h-12 text-white placeholder:text-red-200"
+                      className="pl-10 pr-10 bg-white border-[#6d031e]/20 focus:border-[#6d031e] h-12 text-[#6d031e] placeholder:text-[#6d031e]/40"
                       value={loginData.password}
                       onChange={(e) => setLoginData(prev => ({ ...prev, password: e.target.value }))}
                       required
@@ -413,7 +413,7 @@ export default function Login() {
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-3 text-red-300 hover:text-red-100"
+                      className="absolute right-3 top-3 text-[#6d031e]/60 hover:text-[#6d031e]"
                       disabled={isLoading}
                     >
                       {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -465,11 +465,11 @@ export default function Login() {
                 <div className="space-y-2">
                   <Label htmlFor="fullName" className="font-medium" style={{ color: '#6d031e' }}>Full Name</Label>
                   <div className="relative">
-                    <User className="absolute left-3 top-3 h-4 w-4 text-red-300" />
+                    <User className="absolute left-3 top-3 h-4 w-4 text-[#6d031e]/60" />
                     <Input
                       id="fullName"
                       placeholder="Enter your full name"
-                      className="pl-10 bg-white/10 border-red-600/30 focus:border-red-400 py-3 text-white placeholder:text-red-200"
+                      className="pl-10 bg-white border-[#6d031e]/20 focus:border-[#6d031e] py-3 text-[#6d031e] placeholder:text-[#6d031e]/40"
                       value={registerData.fullName}
                       onChange={(e) => setRegisterData(prev => ({ ...prev, fullName: e.target.value }))}
                       required
@@ -479,14 +479,14 @@ export default function Login() {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="registerEmail" className="text-white font-medium">Email</Label>
+                  <Label htmlFor="registerEmail" className="text-[#6d031e] font-medium">Email</Label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-3 h-4 w-4 text-red-300" />
+                    <Mail className="absolute left-3 top-3 h-4 w-4 text-[#6d031e]/60" />
                     <Input
                       id="registerEmail"
                       type="email"
                       placeholder="Enter your email"
-                      className="pl-10 bg-white/10 border-red-600/30 focus:border-red-400 py-3 text-white placeholder:text-red-200"
+                      className="pl-10 bg-white border-[#6d031e]/20 focus:border-[#6d031e] py-3 text-[#6d031e] placeholder:text-[#6d031e]/40"
                       value={registerData.email}
                       onChange={(e) => setRegisterData(prev => ({ ...prev, email: e.target.value }))}
                       required
@@ -496,14 +496,14 @@ export default function Login() {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="registerPassword" className="text-white font-medium">Password</Label>
+                  <Label htmlFor="registerPassword" className="text-[#6d031e] font-medium">Password</Label>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-3 h-4 w-4 text-red-300" />
+                    <Lock className="absolute left-3 top-3 h-4 w-4 text-[#6d031e]/60" />
                     <Input
                       id="registerPassword"
                       type={showRegisterPassword ? "text" : "password"}
                       placeholder="Create a password (min. 6 characters)"
-                      className="pl-10 pr-10 bg-white/10 border-red-600/30 focus:border-red-400 py-3 text-white placeholder:text-red-200"
+                      className="pl-10 pr-10 bg-white border-[#6d031e]/20 focus:border-[#6d031e] py-3 text-[#6d031e] placeholder:text-[#6d031e]/40"
                       value={registerData.password}
                       onChange={(e) => setRegisterData(prev => ({ ...prev, password: e.target.value }))}
                       required
@@ -512,7 +512,7 @@ export default function Login() {
                     <button
                       type="button"
                       onClick={() => setShowRegisterPassword(!showRegisterPassword)}
-                      className="absolute right-3 top-3 text-red-300 hover:text-red-100"
+                      className="absolute right-3 top-3 text-[#6d031e]/60 hover:text-[#6d031e]"
                       disabled={isLoading}
                     >
                       {showRegisterPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -521,13 +521,13 @@ export default function Login() {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="studentId" className="text-white font-medium">Student ID (Optional)</Label>
+                  <Label htmlFor="studentId" className="text-[#6d031e] font-medium">Student ID (Optional)</Label>
                   <div className="relative">
-                    <GraduationCap className="absolute left-3 top-3 h-4 w-4 text-red-300" />
+                    <GraduationCap className="absolute left-3 top-3 h-4 w-4 text-[#6d031e]/60" />
                     <Input
                       id="studentId"
                       placeholder="Enter your student ID"
-                      className="pl-10 bg-white/10 border-red-600/30 focus:border-red-400 py-3 text-white placeholder:text-red-200"
+                      className="pl-10 bg-white border-[#6d031e]/20 focus:border-[#6d031e] py-3 text-[#6d031e] placeholder:text-[#6d031e]/40"
                       value={registerData.studentId}
                       onChange={(e) => setRegisterData(prev => ({ ...prev, studentId: e.target.value }))}
                       disabled={isLoading}
@@ -536,13 +536,13 @@ export default function Login() {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="role" className="text-white font-medium">Role</Label>
+                  <Label htmlFor="role" className="text-[#6d031e] font-medium">Role</Label>
                   <Select 
                     value={registerData.role} 
                     onValueChange={(value) => setRegisterData(prev => ({ ...prev, role: value }))}
                     disabled={isLoading}
                   >
-                    <SelectTrigger className="bg-white/10 border-red-600/30 focus:border-red-400 py-3 text-white">
+                    <SelectTrigger className="bg-white border-[#6d031e]/20 focus:border-[#6d031e] py-3 text-[#6d031e]">
                       <SelectValue placeholder="Select your role" />
                     </SelectTrigger>
                     <SelectContent>
@@ -556,7 +556,7 @@ export default function Login() {
               
               <Button 
                 type="submit" 
-                className="w-full bg-red-600 hover:bg-red-700 text-white py-4 rounded-xl text-lg font-medium"
+                className="w-full bg-[#6d031e] hover:bg-red-700 text-white py-4 rounded-xl text-lg font-medium"
                 disabled={isLoading}
               >
                 {isLoading ? (
