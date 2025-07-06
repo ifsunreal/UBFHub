@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import logoPath from "@assets/ub foodhub logo2_1751778236646.png";
+
+const logoPath = "/logo.png";
 
 interface SplashScreenProps {
   onComplete: () => void;

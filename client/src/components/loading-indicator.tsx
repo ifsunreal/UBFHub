@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
-import logoPath from "@assets/ub foodhub logo2_1751778236646.png";
+
+const logoPath = "/logo.png";
 
 interface LoadingIndicatorProps {
   message?: string;
