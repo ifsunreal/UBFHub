@@ -49,6 +49,16 @@ export default function AdminDashboard() {
   });
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
+  // User editing state
+  const [editingUser, setEditingUser] = useState<any>(null);
+  const [editUserForm, setEditUserForm] = useState({
+    fullName: "",
+    email: "",
+    studentId: "",
+    role: "",
+  });
+  const [isEditUserDialogOpen, setIsEditUserDialogOpen] = useState(false);
+
   useEffect(() => {
     // Subscribe to real-time data
     const unsubscribeUsers = subscribeToCollection("users", setUsers);
@@ -202,6 +212,49 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleEditUser = (user: any) => {
+    setEditingUser(user);
+    setEditUserForm({
+      fullName: user.fullName || "",
+      email: user.email || "",
+      studentId: user.studentId || "",
+      role: user.role || "",
+    });
+    setIsEditUserDialogOpen(true);
+  };
+
+  const handleUpdateUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingUser) return;
+    
+    setIsLoading(true);
+    try {
+      await updateDocument("users", editingUser.id, editUserForm);
+      
+      toast({
+        title: "User updated successfully",
+        description: "The user account has been updated.",
+      });
+
+      setEditUserForm({
+        fullName: "",
+        email: "",
+        studentId: "",
+        role: "",
+      });
+      setIsEditUserDialogOpen(false);
+      setEditingUser(null);
+    } catch (error: any) {
+      toast({
+        title: "Error updating user",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const stallOwners = users.filter(user => user.role === 'stall_owner');
   const totalUsers = users.length;
   const totalStalls = stalls.length;
@@ -337,14 +390,26 @@ export default function AdminDashboard() {
                           )}
                         </div>
                       </div>
-                      {user.role !== 'admin' && (
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button variant="destructive" size="sm" className="shrink-0">
-                              <Trash2 className="w-4 h-4 sm:mr-2" />
-                              <span className="hidden sm:inline">Delete</span>
-                            </Button>
-                          </AlertDialogTrigger>
+                      <div className="flex gap-2">
+                        {user.role !== 'admin' && (
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            onClick={() => handleEditUser(user)}
+                            className="shrink-0"
+                          >
+                            <Edit className="w-4 h-4 sm:mr-2" />
+                            <span className="hidden sm:inline">Edit</span>
+                          </Button>
+                        )}
+                        {user.role !== 'admin' && (
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="destructive" size="sm" className="shrink-0">
+                                <Trash2 className="w-4 h-4 sm:mr-2" />
+                                <span className="hidden sm:inline">Delete</span>
+                              </Button>
+                            </AlertDialogTrigger>
                           <AlertDialogContent>
                             <AlertDialogHeader>
                               <AlertDialogTitle>Delete User Account</AlertDialogTitle>
@@ -360,7 +425,8 @@ export default function AdminDashboard() {
                             </AlertDialogFooter>
                           </AlertDialogContent>
                         </AlertDialog>
-                      )}
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -654,6 +720,77 @@ export default function AdminDashboard() {
                 type="button"
                 variant="outline"
                 onClick={() => setIsEditDialogOpen(false)}
+                className="border-red-300 text-red-700 hover:bg-red-100"
+              >
+                Cancel
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit User Dialog */}
+      <Dialog open={isEditUserDialogOpen} onOpenChange={setIsEditUserDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit User Account</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleUpdateUser} className="space-y-4">
+            <div>
+              <Label htmlFor="editUserFullName">Full Name</Label>
+              <Input
+                id="editUserFullName"
+                value={editUserForm.fullName}
+                onChange={(e) => setEditUserForm({ ...editUserForm, fullName: e.target.value })}
+                placeholder="Enter full name"
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="editUserEmail">Email</Label>
+              <Input
+                id="editUserEmail"
+                type="email"
+                value={editUserForm.email}
+                onChange={(e) => setEditUserForm({ ...editUserForm, email: e.target.value })}
+                placeholder="Enter email address"
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="editUserStudentId">Student ID</Label>
+              <Input
+                id="editUserStudentId"
+                value={editUserForm.studentId}
+                onChange={(e) => setEditUserForm({ ...editUserForm, studentId: e.target.value })}
+                placeholder="Enter student ID (optional)"
+              />
+            </div>
+            <div>
+              <Label htmlFor="editUserRole">Role</Label>
+              <Select value={editUserForm.role} onValueChange={(value) => setEditUserForm({ ...editUserForm, role: value })}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="student">Student</SelectItem>
+                  <SelectItem value="stall_owner">Stall Owner</SelectItem>
+                  <SelectItem value="admin">Admin</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex gap-2 pt-4">
+              <Button
+                type="submit"
+                disabled={isLoading}
+                className="flex-1 bg-[#6d031e] hover:bg-red-700"
+              >
+                {isLoading ? "Updating..." : "Update User"}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsEditUserDialogOpen(false)}
                 className="border-red-300 text-red-700 hover:bg-red-100"
               >
                 Cancel

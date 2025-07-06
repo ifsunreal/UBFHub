@@ -45,6 +45,7 @@ export default function StallDashboard() {
   const [, setLocation] = useLocation();
   const [menuItems, setMenuItems] = useState<any[]>([]);
   const [orders, setOrders] = useState<any[]>([]);
+  const [reviews, setReviews] = useState<any[]>([]);
   const [stallInfo, setStallInfo] = useState<any>(null);
   const [stallId, setStallId] = useState<string | null>(null);
   const [isMenuDialogOpen, setIsMenuDialogOpen] = useState(false);
@@ -140,9 +141,19 @@ export default function StallDashboard() {
         setOrders
       );
 
+      // Subscribe to reviews for this stall
+      const unsubscribeReviews = subscribeToQuery(
+        "reviews", 
+        "stallId", 
+        "==", 
+        stallId, 
+        setReviews
+      );
+
       return () => {
         unsubscribeMenuItems();
         unsubscribeOrders();
+        unsubscribeReviews();
       };
     }
   }, [stallId]);
@@ -458,7 +469,8 @@ export default function StallDashboard() {
               { id: "overview", label: "Overview", icon: TrendingUp },
               { id: "menu", label: "Menu", icon: Package },
               { id: "orders", label: "Orders", icon: Clock },
-              { id: "statistics", label: "Statistics", icon: Star }
+              { id: "reviews", label: "Reviews", icon: Star },
+              { id: "statistics", label: "Statistics", icon: TrendingUp }
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -904,6 +916,81 @@ export default function StallDashboard() {
           </motion.div>
         )}
 
+        {/* Reviews Tab */}
+        {activeTab === "reviews" && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-6"
+          >
+            <div className="flex justify-between items-center">
+              <h2 className="text-xl font-bold text-[#6d031e]">Student Reviews</h2>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-600">Total Reviews:</span>
+                <Badge variant="outline">{reviews.length}</Badge>
+              </div>
+            </div>
+
+            {reviews.length > 0 ? (
+              <div className="space-y-4">
+                {reviews.map((review) => (
+                  <Card key={review.id}>
+                    <CardContent className="p-4">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-[#6d031e] rounded-full flex items-center justify-center">
+                            <span className="text-white font-medium text-sm">
+                              {review.studentName?.charAt(0) || review.userEmail?.charAt(0) || 'S'}
+                            </span>
+                          </div>
+                          <div>
+                            <p className="font-medium text-sm">{review.studentName || review.userEmail || 'Student'}</p>
+                            <p className="text-xs text-gray-500">{review.studentId ? `ID: ${review.studentId}` : 'UB Student'}</p>
+                            <div className="flex items-center gap-1 mt-1">
+                              {Array.from({ length: 5 }, (_, i) => (
+                                <Star
+                                  key={i}
+                                  className={`w-4 h-4 ${
+                                    i < review.rating
+                                      ? 'text-yellow-400 fill-current'
+                                      : 'text-gray-300'
+                                  }`}
+                                />
+                              ))}
+                              <span className="text-sm text-gray-600 ml-1">({review.rating}/5)</span>
+                            </div>
+                          </div>
+                        </div>
+                        <span className="text-xs text-gray-500">
+                          {review.createdAt ? new Date(review.createdAt.toDate()).toLocaleDateString() : 'Recent'}
+                        </span>
+                      </div>
+                      {review.comment && (
+                        <p className="text-sm text-gray-700 ml-13">{review.comment}</p>
+                      )}
+                      {review.orderId && (
+                        <p className="text-xs text-gray-500 mt-2 ml-13">
+                          Order: {review.orderId}
+                        </p>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <Card>
+                <CardContent className="p-8 text-center">
+                  <Star className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+                  <h3 className="text-lg font-semibold text-gray-700 mb-2">No Reviews Yet</h3>
+                  <p className="text-gray-600">
+                    Student reviews will appear here once customers start leaving feedback about your food and service.
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+          </motion.div>
+        )}
+
         {/* Statistics Tab */}
         {activeTab === "statistics" && (
           <motion.div
@@ -1259,7 +1346,9 @@ export default function StallDashboard() {
               <div className="bg-gray-50 p-4 rounded-lg">
                 <h3 className="font-semibold text-gray-900 mb-2">Customer Information</h3>
                 <div className="space-y-1 text-sm">
-                  <p><span className="font-medium">Name:</span> {selectedOrder.customerName || 'Not provided'}</p>
+                  <p><span className="font-medium">Name:</span> {selectedOrder.customerName || selectedOrder.userName || selectedOrder.fullName || 'Student'}</p>
+                  <p><span className="font-medium">Student ID:</span> {selectedOrder.studentId || selectedOrder.userId || 'Not provided'}</p>
+                  <p><span className="font-medium">Email:</span> {selectedOrder.userEmail || selectedOrder.email || 'Not provided'}</p>
                   <p><span className="font-medium">Order Date:</span> {new Date(selectedOrder.createdAt?.toDate ? selectedOrder.createdAt.toDate() : selectedOrder.createdAt).toLocaleString()}</p>
                   <p><span className="font-medium">Status:</span> 
                     <Badge className={
