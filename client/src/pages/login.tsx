@@ -228,12 +228,50 @@ export default function Login() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-maroon-800 via-maroon-900 to-red-900 flex flex-col">
         {/* Hero Section with Logo and Illustration */}
-        <div className="flex-1 flex flex-col items-center justify-center px-4 py-8 relative min-h-0 bg-[#6d031e]">
+        <div className="flex-1 flex flex-col items-center justify-center px-4 py-8 relative min-h-0 bg-[#6d031e] overflow-hidden">
+          {/* Floating particles */}
+          <div className="absolute inset-0 overflow-hidden">
+            {[...Array(15)].map((_, i) => (
+              <motion.div
+                key={i}
+                className="absolute w-2 h-2 bg-white/20 rounded-full"
+                initial={{
+                  x: Math.random() * (typeof window !== "undefined" ? window.innerWidth : 400),
+                  y: Math.random() * (typeof window !== "undefined" ? window.innerHeight : 600),
+                  scale: 0,
+                }}
+                animate={{
+                  y: [null, Math.random() * -100],
+                  scale: [0, 1, 0],
+                  opacity: [0, 1, 0],
+                }}
+                transition={{
+                  duration: 3 + Math.random() * 2,
+                  repeat: Infinity,
+                  delay: Math.random() * 2,
+                }}
+              />
+            ))}
+          </div>
+
           <motion.div
             initial={{ scale: 0, rotate: -180 }}
-            animate={{ scale: 1, rotate: 0 }}
-            transition={{ delay: 0.3, duration: 0.6, type: "spring" }}
-            className="w-24 h-24 mb-6"
+            animate={{ 
+              scale: 1, 
+              rotate: 0,
+              y: [0, -10, 0],
+            }}
+            transition={{ 
+              delay: 0.3, 
+              duration: 0.6, 
+              type: "spring",
+              y: {
+                duration: 1,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }
+            }}
+            className="w-24 h-24 mb-6 relative z-10"
           >
             <img 
               src="/logo.png" 
@@ -323,26 +361,62 @@ export default function Login() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-maroon-800 via-maroon-900 to-red-900 flex flex-col">
       {/* Header with Logo */}
-      <div className="flex-1 flex flex-col items-center justify-center px-4 py-8 relative min-h-0 bg-[#6d031e]">
+      <div className="flex-1 flex flex-col items-center justify-center px-4 py-8 relative min-h-0 bg-[#6d031e] overflow-hidden">
+        {/* Floating particles */}
+        <div className="absolute inset-0 overflow-hidden">
+          {[...Array(12)].map((_, i) => (
+            <motion.div
+              key={i}
+              className="absolute w-1.5 h-1.5 bg-white/15 rounded-full"
+              initial={{
+                x: Math.random() * (typeof window !== "undefined" ? window.innerWidth : 400),
+                y: Math.random() * (typeof window !== "undefined" ? window.innerHeight : 600),
+                scale: 0,
+              }}
+              animate={{
+                y: [null, Math.random() * -80],
+                scale: [0, 1, 0],
+                opacity: [0, 0.8, 0],
+              }}
+              transition={{
+                duration: 2.5 + Math.random() * 1.5,
+                repeat: Infinity,
+                delay: Math.random() * 1.5,
+              }}
+            />
+          ))}
+        </div>
+
         <Button
           onClick={() => setAuthMode("social")}
           variant="ghost"
           size="sm"
-          className="absolute top-4 left-4 text-red-100 hover:text-white hover:bg-white/10"
+          className="absolute top-4 left-4 text-red-100 hover:text-white hover:bg-white/10 z-10"
         >
           ← Back
         </Button>
         
         <motion.div
           initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ delay: 0.2, duration: 0.3 }}
-          className="w-20 h-20 mx-auto mb-4 rounded-2xl flex items-center justify-center shadow-xl border border-red-600/30 bg-[#6d031e]"
+          animate={{ 
+            scale: 1,
+            y: [0, -8, 0],
+          }}
+          transition={{ 
+            delay: 0.2, 
+            duration: 0.3,
+            y: {
+              duration: 1.2,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }
+          }}
+          className="w-20 h-20 mx-auto mb-4 flex items-center justify-center relative z-10"
         >
           <img 
             src="/logo.png" 
             alt="UB FoodHub Logo" 
-            className="w-14 h-14 object-contain"
+            className="w-16 h-16 object-contain drop-shadow-lg"
           />
         </motion.div>
         <motion.div
