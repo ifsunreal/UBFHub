@@ -52,6 +52,7 @@ export default function Orders() {
   const [orders, setOrders] = useState<any[]>([]);
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [showQRDialog, setShowQRDialog] = useState(false);
+  const [showOrderDetails, setShowOrderDetails] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -96,6 +97,11 @@ export default function Orders() {
   const showQRCode = (order: any) => {
     setSelectedOrder(order);
     setShowQRDialog(true);
+  };
+
+  const viewOrderDetails = (order: any) => {
+    setSelectedOrder(order);
+    setShowOrderDetails(true);
   };
 
   if (orders.length === 0) {
@@ -153,178 +159,203 @@ export default function Orders() {
                 transition={{ delay: index * 0.1 }}
                 className="bg-white rounded-lg p-4 shadow-sm"
               >
-                {/* Order Header */}
-                <div className="flex items-center justify-between mb-3">
-                  <div>
-                    <h3 className="font-semibold text-gray-900">Order {order.qrCode}</h3>
+                {/* Condensed Order Header */}
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="font-semibold text-gray-900">Order {order.qrCode}</h3>
+                      <Badge className={`${statusConfig.color} flex items-center gap-1`}>
+                        {statusConfig.icon}
+                        {statusConfig.label}
+                      </Badge>
+                    </div>
                     <p className="text-sm text-[#6d031e] font-medium">{order.stallName || "Unknown Stall"}</p>
-                    <p className="text-sm text-gray-600">
-                      {order.createdAt ? 
-                        new Date(order.createdAt.seconds * 1000).toLocaleDateString('en-US', {
-                          month: 'short',
-                          day: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        }) : 
-                        'Just now'
-                      }
-                    </p>
+                    <div className="flex items-center justify-between mt-2">
+                      <p className="text-sm text-gray-600">
+                        {order.createdAt ? 
+                          new Date(order.createdAt.seconds * 1000).toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          }) : 
+                          'Just now'
+                        }
+                      </p>
+                      <span className="font-semibold text-lg text-[#6d031e]">₱{order.totalAmount?.toFixed(2)}</span>
+                    </div>
                   </div>
-                  <Badge className={`${statusConfig.color} flex items-center gap-1`}>
-                    {statusConfig.icon}
-                    {statusConfig.label}
-                  </Badge>
                 </div>
 
-                {/* Order Items */}
-                <div className="mb-4">
-                  <h4 className="font-medium text-gray-900 mb-2">Items Ordered:</h4>
-                  <div className="space-y-2">
-                    {order.items && order.items.map((item: any, itemIndex: number) => (
-                      <div key={itemIndex} className="flex justify-between items-start bg-gray-50 rounded-lg p-3">
-                        <div className="flex-1">
-                          <p className="font-medium text-sm">{item.name} x{item.quantity}</p>
-                          {item.customizations && item.customizations.length > 0 && (
-                            <p className="text-xs text-gray-600">
-                              Add-ons: {item.customizations.map((c: any) => c.name).join(", ")}
-                            </p>
-                          )}
-                        </div>
-                        <span className="font-semibold text-sm">
-                          ₱{(((item.price || 0) + (item.customizations?.reduce((sum: number, custom: any) => sum + (custom.price || 0), 0) || 0)) * item.quantity).toFixed(2)}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                  
-                  {/* Payment Info */}
-                  <div className="mt-3 pt-3 border-t border-gray-200">
-                    <div className="flex justify-between items-center">
-                      <span className="font-semibold">Total: ₱{order.totalAmount?.toFixed(2)}</span>
-                      <div className="text-right">
-                        <p className="text-sm text-gray-600">Payment: {order.paymentMethod === 'cash' ? 'Cash' : order.paymentMethod}</p>
-                        {order.paymentMethod === 'cash' && order.cashAmount && (
-                          <div className="text-xs text-gray-600">
-                            <p>Cash: ₱{order.cashAmount.toFixed(2)}</p>
-                            <p>Change: ₱{order.changeRequired?.toFixed(2) || '0.00'}</p>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {order.specialInstructions && (
-                    <div className="mt-2 p-2 bg-blue-50 rounded-lg">
-                      <p className="text-xs text-blue-700">
-                        <strong>Special Instructions:</strong> {order.specialInstructions}
-                      </p>
-                    </div>
-                  )}
-                </div>
-
-                {/* Real-time Status Timeline */}
-                <div className="mb-4">
-                  <h4 className="font-medium text-gray-900 mb-3">Order Status</h4>
-                  <div className="space-y-3">
-                    {/* Progress Timeline */}
-                    <div className="flex items-center gap-3">
-                      <div className={`w-3 h-3 rounded-full ${['pending', 'preparing', 'ready', 'completed'].includes(order.status) ? 'bg-green-500' : 'bg-gray-300'}`}></div>
-                      <div className="flex-1">
-                        <p className="text-sm font-medium">Order Confirmed</p>
-                        <p className="text-xs text-gray-600">We've received your order</p>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center gap-3">
-                      <div className={`w-3 h-3 rounded-full ${['preparing', 'ready', 'completed'].includes(order.status) ? 'bg-green-500' : 'bg-gray-300'}`}></div>
-                      <div className="flex-1">
-                        <p className="text-sm font-medium">Preparing</p>
-                        <p className="text-xs text-gray-600">Stall owner is preparing your food</p>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center gap-3">
-                      <div className={`w-3 h-3 rounded-full ${['ready', 'completed'].includes(order.status) ? 'bg-green-500' : 'bg-gray-300'}`}></div>
-                      <div className="flex-1">
-                        <p className="text-sm font-medium">Ready for Pickup</p>
-                        <p className="text-xs text-gray-600">Your order is ready!</p>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* Current Status Highlight */}
-                  <div className={`mt-3 p-3 rounded-lg ${
-                    order.status === 'pending' ? 'bg-yellow-50 border border-yellow-200' :
-                    order.status === 'preparing' ? 'bg-blue-50 border border-blue-200' :
-                    order.status === 'ready' ? 'bg-green-50 border border-green-200' :
-                    order.status === 'cancelled' ? 'bg-red-50 border border-red-200' :
-                    'bg-gray-50 border border-gray-200'
-                  }`}>
-                    <div className="flex items-center gap-2">
-                      {statusConfig.icon}
-                      <span className="font-medium text-sm">{statusConfig.description}</span>
-                    </div>
-                    
-                    {order.status === 'pending' && (
-                      <p className="text-xs text-gray-600 mt-1">
-                        Estimated ready time: {order.estimatedTime || "15-40 mins"}
-                      </p>
-                    )}
-                    
-                    {order.status === 'ready' && (
-                      <p className="text-xs text-green-700 mt-1">
-                        Show QR code to the stall owner for pickup
-                      </p>
-                    )}
-                  </div>
+                {/* Quick Summary */}
+                <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+                  <p className="text-sm text-gray-700">
+                    {order.items?.length} item{order.items?.length !== 1 ? 's' : ''} • {order.paymentMethod === 'cash' ? 'Cash Payment' : order.paymentMethod || 'Payment method not specified'}
+                  </p>
+                  <p className="text-xs text-gray-600 mt-1">{statusConfig.description}</p>
                 </div>
 
                 {/* Action Buttons */}
                 <div className="flex gap-2">
-                  {order.status === 'ready' || order.status === 'preparing' ? (
+                  <Button
+                    onClick={() => viewOrderDetails(order)}
+                    className="flex-1 bg-[#6d031e] hover:bg-red-700 text-white"
+                  >
+                    View Details
+                  </Button>
+                  
+                  <Button
+                    disabled={true}
+                    className="flex-1 bg-gray-300 text-gray-500 cursor-not-allowed opacity-50"
+                    title="Cancel feature coming soon"
+                  >
+                    🔒 Cancel Order
+                  </Button>
+                  
+                  {order.status === 'ready' && (
                     <Button
                       onClick={() => showQRCode(order)}
-                      className="flex-1 bg-[#6d031e] hover:bg-red-700 text-white"
-                    >
-                      <QrCode className="w-4 h-4 mr-2" />
-                      Show QR Code
-                    </Button>
-                  ) : null}
-                  
-                  {canCancel && (
-                    <Button
                       variant="outline"
-                      onClick={() => cancelOrder(order.id)}
-                      disabled={isLoading}
-                      className="text-red-600 border-red-200 hover:bg-red-50"
+                      className="border-[#6d031e] text-[#6d031e] hover:bg-[#6d031e] hover:text-white"
                     >
-                      Cancel Order
-                    </Button>
-                  )}
-                  
-                  {order.status === 'completed' && (
-                    <Button
-                      variant="outline"
-                      onClick={() => setLocation(`/restaurant/${order.stallId}`)}
-                      className="flex-1"
-                    >
-                      Reorder
+                      <QrCode className="w-4 h-4 mr-1" />
+                      QR Code
                     </Button>
                   )}
                 </div>
-
-                {/* Special Instructions */}
-                {order.specialInstructions && (
-                  <div className="mt-3 p-2 bg-gray-50 rounded text-xs">
-                    <span className="font-medium">Special instructions: </span>
-                    {order.specialInstructions}
-                  </div>
-                )}
               </motion.div>
             );
           })}
         </AnimatePresence>
       </div>
+
+      {/* Order Details Modal */}
+      <Dialog open={showOrderDetails} onOpenChange={setShowOrderDetails}>
+        <DialogContent className="max-w-md mx-auto max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Order Details</DialogTitle>
+          </DialogHeader>
+          {selectedOrder && (
+            <div className="space-y-4">
+              {/* Order Header */}
+              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                <div>
+                  <h3 className="font-semibold text-gray-900">Order {selectedOrder.qrCode}</h3>
+                  <p className="text-sm text-[#6d031e] font-medium">{selectedOrder.stallName || "Unknown Stall"}</p>
+                  <p className="text-sm text-gray-600">
+                    {selectedOrder.createdAt ? 
+                      new Date(selectedOrder.createdAt.seconds * 1000).toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      }) : 
+                      'Just now'
+                    }
+                  </p>
+                </div>
+                <Badge className={`${orderStatusConfig[selectedOrder.status as keyof typeof orderStatusConfig]?.color || orderStatusConfig.pending.color} flex items-center gap-1`}>
+                  {orderStatusConfig[selectedOrder.status as keyof typeof orderStatusConfig]?.icon || orderStatusConfig.pending.icon}
+                  {orderStatusConfig[selectedOrder.status as keyof typeof orderStatusConfig]?.label || 'Pending'}
+                </Badge>
+              </div>
+
+              {/* Order Items */}
+              <div>
+                <h4 className="font-medium text-gray-900 mb-3">Items Ordered:</h4>
+                <div className="space-y-2">
+                  {selectedOrder.items && selectedOrder.items.map((item: any, itemIndex: number) => (
+                    <div key={itemIndex} className="flex justify-between items-start bg-gray-50 rounded-lg p-3">
+                      <div className="flex-1">
+                        <p className="font-medium text-sm">{item.name} x{item.quantity}</p>
+                        {item.customizations && item.customizations.length > 0 && (
+                          <p className="text-xs text-gray-600">
+                            Add-ons: {item.customizations.map((c: any) => c.name).join(", ")}
+                          </p>
+                        )}
+                      </div>
+                      <span className="font-semibold text-sm">
+                        ₱{(((item.price || 0) + (item.customizations?.reduce((sum: number, custom: any) => sum + (custom.price || 0), 0) || 0)) * item.quantity).toFixed(2)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              
+              {/* Payment Info */}
+              <div className="pt-3 border-t border-gray-200">
+                <div className="flex justify-between items-center mb-3">
+                  <span className="font-semibold text-lg">Total: ₱{selectedOrder.totalAmount?.toFixed(2)}</span>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Payment Method:</span>
+                    <span className="font-medium">{selectedOrder.paymentMethod === 'cash' ? 'Cash' : selectedOrder.paymentMethod || 'Not specified'}</span>
+                  </div>
+                  {selectedOrder.paymentMethod === 'cash' && selectedOrder.cashAmount && (
+                    <>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-600">Cash Amount:</span>
+                        <span className="font-medium">₱{selectedOrder.cashAmount.toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-600">Change:</span>
+                        <span className="font-medium">₱{selectedOrder.changeRequired?.toFixed(2) || '0.00'}</span>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+              
+              {selectedOrder.specialInstructions && (
+                <div className="p-3 bg-blue-50 rounded-lg">
+                  <p className="text-sm text-blue-700">
+                    <strong>Special Instructions:</strong> {selectedOrder.specialInstructions}
+                  </p>
+                </div>
+              )}
+
+              {/* Status Timeline */}
+              <div>
+                <h4 className="font-medium text-gray-900 mb-3">Order Status</h4>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-3 h-3 rounded-full ${['pending', 'preparing', 'ready', 'completed'].includes(selectedOrder.status) ? 'bg-green-500' : 'bg-gray-300'}`}></div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium">Order Confirmed</p>
+                      <p className="text-xs text-gray-600">We've received your order</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-3">
+                    <div className={`w-3 h-3 rounded-full ${['preparing', 'ready', 'completed'].includes(selectedOrder.status) ? 'bg-green-500' : 'bg-gray-300'}`}></div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium">Preparing</p>
+                      <p className="text-xs text-gray-600">Stall owner is preparing your food</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-3">
+                    <div className={`w-3 h-3 rounded-full ${['ready', 'completed'].includes(selectedOrder.status) ? 'bg-green-500' : 'bg-gray-300'}`}></div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium">Ready for Pickup</p>
+                      <p className="text-xs text-gray-600">Your order is ready!</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-3">
+                    <div className={`w-3 h-3 rounded-full ${selectedOrder.status === 'completed' ? 'bg-green-500' : 'bg-gray-300'}`}></div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium">Completed</p>
+                      <p className="text-xs text-gray-600">Order completed successfully</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* QR Code Dialog */}
       <Dialog open={showQRDialog} onOpenChange={setShowQRDialog}>
