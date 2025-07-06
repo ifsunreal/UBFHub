@@ -58,7 +58,7 @@ export default function StallDashboard() {
     isAvailable: true,
     isPopular: false,
     image: "",
-    customizations: [{ name: "", price: 0 }] // For add-ons like "Extra Rice +25", "No Onions +0", etc.
+    customizations: [{ name: "", price: 0 }] // For customizations like "Extra Rice +25", "Choice of Rice", etc.
   });
 
   useEffect(() => {
@@ -700,7 +700,7 @@ export default function StallDashboard() {
               {itemForm.customizations.map((custom, index) => (
                 <div key={index} className="flex gap-2 items-center">
                   <Input
-                    placeholder="Option name (e.g. Extra Rice)"
+                    placeholder="Option name (e.g. Choice of Rice, Extra Sauce, etc.)"
                     value={custom.name}
                     onChange={(e) => updateCustomization(index, "name", e.target.value)}
                     className="flex-1"

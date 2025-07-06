@@ -83,14 +83,20 @@ export default function Restaurant() {
     try {
       const selectedCustomizations = Object.entries(customizations)
         .filter(([_, selected]) => selected)
-        .map(([key, _]) => key);
+        .map(([key, _]) => {
+          const custom = selectedItem.customizations?.find(c => c.name === key);
+          return custom ? { name: key, price: custom.price || 0 } : { name: key, price: 0 };
+        });
 
       await addDocument("cartItems", {
         userId: state.user.id,
         menuItemId: selectedItem.id,
         stallId: restaurantId,
+        name: selectedItem.name,
+        image: selectedItem.image,
+        price: selectedItem.price,
         quantity,
-        customizations: selectedCustomizations.length > 0 ? selectedCustomizations : null,
+        customizations: selectedCustomizations.length > 0 ? selectedCustomizations : [],
         specialInstructions: specialInstructions || null,
       });
 
@@ -195,23 +201,7 @@ export default function Restaurant() {
           <span>₱{stall.deliveryFee || "59.00"} delivery</span>
         </div>
 
-        {/* Promotional Badges */}
-        <motion.div 
-          initial={{ x: -20, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-          transition={{ delay: 0.3 }}
-          className="flex gap-2 overflow-x-auto pb-2"
-        >
-          <Badge className="bg-pink-100 text-pink-700 border-pink-200 flex-shrink-0">
-            20% off minimum ₱399
-          </Badge>
-          <Badge className="bg-pink-100 text-pink-700 border-pink-200 flex-shrink-0">
-            10% cashback: WEEKENDER
-          </Badge>
-          <Badge className="bg-pink-100 text-pink-700 border-pink-200 flex-shrink-0">
-            ₱5 off delivery
-          </Badge>
-        </motion.div>
+
       </motion.div>
 
       {/* Search Bar */}
@@ -371,43 +361,8 @@ export default function Restaurant() {
                 <p className="font-semibold text-left">from ₱{selectedItem.price}</p>
               </DialogHeader>
 
-              {/* Sample Customizations */}
+              {/* Dynamic Customizations */}
               <div className="space-y-4">
-                <div>
-                  <Label className="text-base font-medium">
-                    Choice of Rice
-                    <Badge className="bg-pink-500 text-white text-xs ml-2">Required</Badge>
-                  </Label>
-                  <p className="text-sm text-gray-600 mb-3">Select 1</p>
-                  <RadioGroup value={customizations.rice || ""} onValueChange={(value) => setCustomizations({...customizations, rice: value})}>
-                    <div className="flex items-center space-x-2 p-3 border rounded-lg">
-                      <RadioGroupItem value="special-sweet-corn" id="special-sweet-corn" />
-                      <Label htmlFor="special-sweet-corn" className="flex-1">
-                        Special Sweet Corn Rice
-                        <span className="text-sm text-gray-600 block">+₱29.00</span>
-                      </Label>
-                    </div>
-                    <div className="flex items-center space-x-2 p-3 border rounded-lg">
-                      <RadioGroupItem value="special-kimchi" id="special-kimchi" />
-                      <Label htmlFor="special-kimchi" className="flex-1">
-                        Special Kimchi Rice
-                        <span className="text-sm text-gray-600 block">+₱29.00</span>
-                      </Label>
-                    </div>
-                    <div className="flex items-center space-x-2 p-3 border rounded-lg">
-                      <RadioGroupItem value="regular-white" id="regular-white" />
-                      <Label htmlFor="regular-white" className="flex-1">
-                        Regular White Rice
-                        <span className="text-sm text-gray-600 block">Free</span>
-                        <div className="flex items-center gap-1 mt-1">
-                          <span className="text-xs">🔥</span>
-                          <span className="text-xs text-gray-600">Popular</span>
-                        </div>
-                      </Label>
-                    </div>
-                  </RadioGroup>
-                </div>
-
                 {selectedItem.customizations && selectedItem.customizations.length > 0 && (
                   <div>
                     <Label className="text-base font-medium">Customization Options</Label>
@@ -446,7 +401,17 @@ export default function Restaurant() {
 
                 <div>
                   <Label className="text-base font-medium">If this product is not available</Label>
-                  <Button variant="outline" className="w-full mt-2 justify-start">
+                  <Button 
+                    variant="outline" 
+                    className="w-full mt-2 justify-start"
+                    onClick={() => {
+                      setIsDialogOpen(false);
+                      toast({
+                        title: "Preference saved",
+                        description: "We'll remove this item if unavailable",
+                      });
+                    }}
+                  >
                     Remove it from my order →
                   </Button>
                 </div>

@@ -63,7 +63,11 @@ export default function Cart() {
     }
   };
 
-  const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const subtotal = cartItems.reduce((sum, item) => {
+    const itemPrice = item.price || 0;
+    const customizationPrice = item.customizations?.reduce((sum, custom) => sum + (custom.price || 0), 0) || 0;
+    return sum + ((itemPrice + customizationPrice) * item.quantity);
+  }, 0);
   const deliveryFee = 59.00; // Standard delivery fee
   const total = subtotal + deliveryFee;
 
@@ -214,7 +218,12 @@ export default function Cart() {
                 </div>
                 <div className="flex-1">
                   <h3 className="font-medium text-gray-900">{item.name}</h3>
-                  <p className="text-sm text-gray-600">{item.customizations || "Steamed Rice"}</p>
+                  <p className="text-sm text-gray-600">
+                    {item.customizations && item.customizations.length > 0 
+                      ? item.customizations.map(custom => `${custom.name} (+₱${custom.price})`).join(', ')
+                      : "No customizations"
+                    }
+                  </p>
                   <div className="flex items-center justify-between mt-2">
                     <div className="flex items-center gap-2">
                       <Button
@@ -236,7 +245,7 @@ export default function Cart() {
                       </Button>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="font-semibold">₱{(item.price * item.quantity).toFixed(2)}</span>
+                      <span className="font-semibold">₱{(((item.price || 0) + (item.customizations?.reduce((sum, custom) => sum + (custom.price || 0), 0) || 0)) * item.quantity).toFixed(2)}</span>
                       <Button
                         variant="ghost"
                         size="icon"
@@ -266,34 +275,7 @@ export default function Cart() {
           </Button>
         </motion.div>
 
-        {/* Popular with your order */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="bg-white rounded-lg p-4"
-        >
-          <h3 className="font-medium mb-2">Popular with your order</h3>
-          <p className="text-sm text-gray-600 mb-3">Other customers also bought these</p>
-          <div className="grid grid-cols-3 gap-3">
-            {[
-              { name: "BBQ Chicken Ricebowl", price: 109, image: "/api/placeholder/80/80" },
-              { name: "Rice", price: 49, image: "/api/placeholder/80/80" },
-              { name: "Original Gravy Chicken Ricebowl", price: 109, image: "/api/placeholder/80/80" }
-            ].map((item, index) => (
-              <div key={index} className="text-center">
-                <div className="w-full aspect-square bg-gray-100 rounded-lg mb-2 relative overflow-hidden">
-                  <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
-                  <Button size="icon" className="absolute bottom-1 right-1 w-6 h-6 rounded-full">
-                    <Plus className="w-3 h-3" />
-                  </Button>
-                </div>
-                <p className="text-xs font-medium">₱{item.price}.00</p>
-                <p className="text-xs text-gray-600 truncate">{item.name}</p>
-              </div>
-            ))}
-          </div>
-        </motion.div>
+
 
         {/* Order Summary */}
         <motion.div
