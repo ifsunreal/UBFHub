@@ -118,7 +118,7 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ duration: 0.8, delay: 1.5 }}
-              className="text-center mb-8"
+              className="text-center mb-8 relative z-20"
             >
               <h1 className="text-3xl font-bold text-white mb-2">UB FoodHub</h1>
               <p className="text-white/80 text-sm">University of Batangas Food Ordering</p>

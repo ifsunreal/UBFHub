@@ -316,7 +316,7 @@ export default function Login() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6, duration: 0.5 }}
-            className="text-center mb-8"
+            className="text-center mb-8 relative z-20"
           >
             <h1 className="text-3xl font-bold text-white mb-2">UB FoodHub</h1>
             <p className="text-red-100 text-lg font-medium">Your campus dining companion</p>
@@ -487,7 +487,7 @@ export default function Login() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4, duration: 0.3 }}
-          className="text-center"
+          className="text-center relative z-20"
         >
           <h2 className="text-xl font-bold text-white mb-2">
             {isSignUp ? "Create Account" : "Welcome Back"}
