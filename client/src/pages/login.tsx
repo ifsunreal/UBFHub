@@ -229,26 +229,58 @@ export default function Login() {
       <div className="min-h-screen bg-gradient-to-br from-maroon-800 via-maroon-900 to-red-900 flex flex-col">
         {/* Hero Section with Logo and Illustration */}
         <div className="flex-1 flex flex-col items-center justify-center px-4 py-8 relative min-h-0 bg-[#6d031e] overflow-hidden">
-          {/* Floating particles */}
+          {/* Liquid glass background effect */}
           <div className="absolute inset-0 overflow-hidden">
-            {[...Array(15)].map((_, i) => (
+            <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-white/3 backdrop-blur-sm"></div>
+            <motion.div
+              animate={{
+                scale: [1, 1.1, 1],
+                rotate: [0, 360],
+                opacity: [0.1, 0.3, 0.1],
+              }}
+              transition={{
+                duration: 8,
+                repeat: Infinity,
+                ease: "linear",
+              }}
+              className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-pink-500/10 via-purple-500/10 to-blue-500/10 rounded-full blur-3xl"
+            />
+            <motion.div
+              animate={{
+                scale: [1.1, 1, 1.1],
+                rotate: [360, 0],
+                opacity: [0.2, 0.1, 0.2],
+              }}
+              transition={{
+                duration: 6,
+                repeat: Infinity,
+                ease: "linear",
+              }}
+              className="absolute bottom-0 right-0 w-3/4 h-3/4 bg-gradient-to-tl from-red-500/10 via-orange-500/10 to-yellow-500/10 rounded-full blur-2xl"
+            />
+          </div>
+
+          {/* Floating particles from bottom */}
+          <div className="absolute inset-0 overflow-hidden">
+            {[...Array(25)].map((_, i) => (
               <motion.div
                 key={i}
-                className="absolute w-2 h-2 bg-white/20 rounded-full"
+                className="absolute w-1.5 h-1.5 bg-white/25 rounded-full"
                 initial={{
                   x: Math.random() * (typeof window !== "undefined" ? window.innerWidth : 400),
-                  y: Math.random() * (typeof window !== "undefined" ? window.innerHeight : 600),
+                  y: typeof window !== "undefined" ? window.innerHeight + 50 : 700,
                   scale: 0,
                 }}
                 animate={{
-                  y: [null, Math.random() * -100],
-                  scale: [0, 1, 0],
-                  opacity: [0, 1, 0],
+                  y: -100,
+                  scale: [0, 1, 0.5, 0],
+                  opacity: [0, 0.8, 0.3, 0],
                 }}
                 transition={{
-                  duration: 3 + Math.random() * 2,
+                  duration: 4 + Math.random() * 3,
                   repeat: Infinity,
-                  delay: Math.random() * 2,
+                  delay: Math.random() * 3,
+                  ease: "easeOut",
                 }}
               />
             ))}
@@ -362,26 +394,58 @@ export default function Login() {
     <div className="min-h-screen bg-gradient-to-br from-maroon-800 via-maroon-900 to-red-900 flex flex-col">
       {/* Header with Logo */}
       <div className="flex-1 flex flex-col items-center justify-center px-4 py-8 relative min-h-0 bg-[#6d031e] overflow-hidden">
-        {/* Floating particles */}
+        {/* Liquid glass background effect */}
         <div className="absolute inset-0 overflow-hidden">
-          {[...Array(12)].map((_, i) => (
+          <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-white/3 backdrop-blur-sm"></div>
+          <motion.div
+            animate={{
+              scale: [1, 1.1, 1],
+              rotate: [0, 360],
+              opacity: [0.1, 0.25, 0.1],
+            }}
+            transition={{
+              duration: 10,
+              repeat: Infinity,
+              ease: "linear",
+            }}
+            className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-pink-500/8 via-purple-500/8 to-blue-500/8 rounded-full blur-3xl"
+          />
+          <motion.div
+            animate={{
+              scale: [1.1, 1, 1.1],
+              rotate: [360, 0],
+              opacity: [0.15, 0.05, 0.15],
+            }}
+            transition={{
+              duration: 7,
+              repeat: Infinity,
+              ease: "linear",
+            }}
+            className="absolute bottom-0 right-0 w-3/4 h-3/4 bg-gradient-to-tl from-red-500/8 via-orange-500/8 to-yellow-500/8 rounded-full blur-2xl"
+          />
+        </div>
+
+        {/* Floating particles from bottom */}
+        <div className="absolute inset-0 overflow-hidden">
+          {[...Array(20)].map((_, i) => (
             <motion.div
               key={i}
-              className="absolute w-1.5 h-1.5 bg-white/15 rounded-full"
+              className="absolute w-1.5 h-1.5 bg-white/20 rounded-full"
               initial={{
                 x: Math.random() * (typeof window !== "undefined" ? window.innerWidth : 400),
-                y: Math.random() * (typeof window !== "undefined" ? window.innerHeight : 600),
+                y: typeof window !== "undefined" ? window.innerHeight + 50 : 700,
                 scale: 0,
               }}
               animate={{
-                y: [null, Math.random() * -80],
-                scale: [0, 1, 0],
-                opacity: [0, 0.8, 0],
+                y: -100,
+                scale: [0, 1, 0.5, 0],
+                opacity: [0, 0.7, 0.3, 0],
               }}
               transition={{
-                duration: 2.5 + Math.random() * 1.5,
+                duration: 3.5 + Math.random() * 2.5,
                 repeat: Infinity,
-                delay: Math.random() * 1.5,
+                delay: Math.random() * 2.5,
+                ease: "easeOut",
               }}
             />
           ))}

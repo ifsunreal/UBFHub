@@ -31,8 +31,35 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
           transition={{ duration: 0.8 }}
           className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-[#6d031e] via-[#8b0a2e] to-[#a91b42] overflow-hidden"
         >
-          {/* Animated background elements */}
+          {/* Liquid glass background effect */}
           <div className="absolute inset-0 overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-white/3 backdrop-blur-sm"></div>
+            <motion.div
+              animate={{
+                scale: [1, 1.3, 1],
+                rotate: [0, 360],
+                opacity: [0.2, 0.4, 0.2],
+              }}
+              transition={{
+                duration: 12,
+                repeat: Infinity,
+                ease: "linear",
+              }}
+              className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-pink-500/15 via-purple-500/15 to-blue-500/15 rounded-full blur-3xl"
+            />
+            <motion.div
+              animate={{
+                scale: [1.3, 1, 1.3],
+                rotate: [360, 0],
+                opacity: [0.3, 0.1, 0.3],
+              }}
+              transition={{
+                duration: 8,
+                repeat: Infinity,
+                ease: "linear",
+              }}
+              className="absolute bottom-0 right-0 w-3/4 h-3/4 bg-gradient-to-tl from-red-500/15 via-orange-500/15 to-yellow-500/15 rounded-full blur-2xl"
+            />
             <motion.div
               animate={{
                 scale: [1, 1.2, 1],
@@ -126,25 +153,26 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
             </motion.p>
           </motion.div>
 
-          {/* Floating particles */}
-          {[...Array(6)].map((_, i) => (
+          {/* Floating particles from bottom */}
+          {[...Array(18)].map((_, i) => (
             <motion.div
               key={i}
+              className="absolute w-2 h-2 bg-white/30 rounded-full"
+              initial={{
+                x: Math.random() * (typeof window !== "undefined" ? window.innerWidth : 400),
+                y: typeof window !== "undefined" ? window.innerHeight + 50 : 700,
+                scale: 0,
+              }}
               animate={{
-                y: [0, -20, 0],
-                x: [0, Math.random() * 10 - 5, 0],
-                scale: [1, 1.2, 1],
-                opacity: [0.3, 0.8, 0.3],
+                y: -150,
+                scale: [0, 1, 0.5, 0],
+                opacity: [0, 0.8, 0.4, 0],
               }}
               transition={{
-                duration: 3 + Math.random() * 2,
+                duration: 5 + Math.random() * 3,
                 repeat: Infinity,
-                delay: Math.random() * 2,
-              }}
-              className="absolute w-2 h-2 bg-white/50 rounded-full blur-sm"
-              style={{
-                left: `${20 + Math.random() * 60}%`,
-                top: `${20 + Math.random() * 60}%`,
+                delay: Math.random() * 4,
+                ease: "easeOut",
               }}
             />
           ))}

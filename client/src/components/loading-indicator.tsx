@@ -32,30 +32,58 @@ export default function LoadingIndicator({
       <div
         className={`flex flex-col items-center justify-center space-y-6 p-8 ${className}`}
       >
-        {/* Floating particles */}
+        {/* Liquid glass background effect */}
         <div className="absolute inset-0 overflow-hidden">
-          {[...Array(20)].map((_, i) => (
+          <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-white/3 backdrop-blur-sm"></div>
+          <motion.div
+            animate={{
+              scale: [1, 1.2, 1],
+              rotate: [0, 360],
+              opacity: [0.2, 0.4, 0.2],
+            }}
+            transition={{
+              duration: 10,
+              repeat: Infinity,
+              ease: "linear",
+            }}
+            className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-pink-500/12 via-purple-500/12 to-blue-500/12 rounded-full blur-3xl"
+          />
+          <motion.div
+            animate={{
+              scale: [1.2, 1, 1.2],
+              rotate: [360, 0],
+              opacity: [0.3, 0.1, 0.3],
+            }}
+            transition={{
+              duration: 7,
+              repeat: Infinity,
+              ease: "linear",
+            }}
+            className="absolute bottom-0 right-0 w-3/4 h-3/4 bg-gradient-to-tl from-red-500/12 via-orange-500/12 to-yellow-500/12 rounded-full blur-2xl"
+          />
+        </div>
+
+        {/* Floating particles from bottom */}
+        <div className="absolute inset-0 overflow-hidden">
+          {[...Array(22)].map((_, i) => (
             <motion.div
               key={i}
-              className="absolute w-2 h-2 bg-white/20 rounded-full"
+              className="absolute w-2 h-2 bg-white/25 rounded-full"
               initial={{
-                x:
-                  Math.random() *
-                  (typeof window !== "undefined" ? window.innerWidth : 800),
-                y:
-                  Math.random() *
-                  (typeof window !== "undefined" ? window.innerHeight : 600),
+                x: Math.random() * (typeof window !== "undefined" ? window.innerWidth : 800),
+                y: typeof window !== "undefined" ? window.innerHeight + 50 : 700,
                 scale: 0,
               }}
               animate={{
-                y: [null, Math.random() * -100],
-                scale: [0, 1, 0],
-                opacity: [0, 1, 0],
+                y: -120,
+                scale: [0, 1, 0.5, 0],
+                opacity: [0, 0.8, 0.4, 0],
               }}
               transition={{
-                duration: 3 + Math.random() * 2,
+                duration: 4 + Math.random() * 3,
                 repeat: Infinity,
-                delay: Math.random() * 2,
+                delay: Math.random() * 3,
+                ease: "easeOut",
               }}
             />
           ))}
