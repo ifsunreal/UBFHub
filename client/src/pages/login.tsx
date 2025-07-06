@@ -5,19 +5,22 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Spinner } from "@/components/ui/spinner";
 import { useLocation } from "wouter";
 import { useStore } from "@/lib/store";
 import { useToast } from "@/hooks/use-toast";
-import { User, Mail, Lock, GraduationCap } from "lucide-react";
+import { User, Mail, Lock, GraduationCap, Eye, EyeOff } from "lucide-react";
 import { signIn, signUp, createDocument, getDocument, onAuthStateChange } from "@/lib/firebase";
 import { createInitialAccounts } from "@/lib/create-admin-accounts";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function Login() {
   const [, setLocation] = useLocation();
-  const { dispatch } = useStore();
+  const { state, dispatch } = useStore();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showRegisterPassword, setShowRegisterPassword] = useState(false);
 
   // Login state
   const [loginData, setLoginData] = useState({
@@ -34,7 +37,7 @@ export default function Login() {
     role: "student",
   });
 
-  // Check for existing user authentication and create initial accounts
+  // Check for existing user authentication
   useEffect(() => {
     // Create initial accounts on first load
     createInitialAccounts();
@@ -66,47 +69,35 @@ export default function Login() {
     return () => unsubscribe();
   }, [dispatch, setLocation]);
 
+  // Redirect if user is already logged in
+  useEffect(() => {
+    if (state.user) {
+      const role = state.user.role;
+      if (role === 'admin') {
+        setLocation("/admin");
+      } else if (role === 'stall_owner') {
+        setLocation("/stall-dashboard");
+      } else {
+        setLocation("/");
+      }
+    }
+  }, [state.user, setLocation]);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!loginData.email || !loginData.password) {
+      toast({
+        title: "Missing Information",
+        description: "Please enter both email and password.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
     
     try {
-      // Handle specific admin accounts
-      if (loginData.email === "admin@foodhub.com" && loginData.password === "admin123") {
-        const userData = {
-          id: "admin-account-001",
-          email: "admin@foodhub.com",
-          fullName: "System Administrator",
-          role: "admin",
-          loyaltyPoints: 0,
-        };
-        dispatch({ type: "SET_USER", payload: userData });
-        setLocation("/admin");
-        toast({
-          title: "Welcome, Admin!",
-          description: "You have successfully logged in as administrator.",
-        });
-        return;
-      }
-
-      if (loginData.email === "canteen@foodhub.com" && loginData.password === "canteen123") {
-        const userData = {
-          id: "stall-owner-001",
-          email: "canteen@foodhub.com",
-          fullName: "Food Stall Owner",
-          role: "stall_owner",
-          loyaltyPoints: 0,
-        };
-        dispatch({ type: "SET_USER", payload: userData });
-        setLocation("/stall-dashboard");
-        toast({
-          title: "Welcome, Stall Owner!",
-          description: "You have successfully logged in to your dashboard.",
-        });
-        return;
-      }
-
-      // Regular Firebase authentication
+      // Use Firebase authentication
       const userCredential = await signIn(loginData.email, loginData.password);
       const firebaseUser = userCredential.user;
       
@@ -117,13 +108,42 @@ export default function Login() {
         
         toast({
           title: "Welcome back!",
-          description: "You have successfully logged in.",
+          description: `Hello, ${userData.fullName}!`,
+        });
+
+        // Route based on user role
+        const role = userData.role;
+        if (role === 'admin') {
+          setLocation("/admin");
+        } else if (role === 'stall_owner') {
+          setLocation("/stall-dashboard");
+        } else {
+          setLocation("/");
+        }
+      } else {
+        toast({
+          title: "Account Setup Required",
+          description: "Please complete your account setup.",
+          variant: "destructive",
         });
       }
     } catch (error: any) {
+      console.error("Login error:", error);
+      let errorMessage = "Please check your credentials.";
+      
+      if (error.code === 'auth/user-not-found') {
+        errorMessage = "No account found with this email.";
+      } else if (error.code === 'auth/wrong-password') {
+        errorMessage = "Incorrect password.";
+      } else if (error.code === 'auth/invalid-email') {
+        errorMessage = "Invalid email format.";
+      } else if (error.code === 'auth/user-disabled') {
+        errorMessage = "This account has been disabled.";
+      }
+      
       toast({
         title: "Login failed",
-        description: error.message || "Please check your credentials.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -133,6 +153,24 @@ export default function Login() {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!registerData.email || !registerData.password || !registerData.fullName) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all required fields.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (registerData.password.length < 6) {
+      toast({
+        title: "Password Too Short",
+        description: "Password must be at least 6 characters long.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
     
     try {
@@ -154,7 +192,7 @@ export default function Login() {
       
       toast({
         title: "Account created!",
-        description: "Your account has been created successfully.",
+        description: `Welcome to UB FoodHub, ${registerData.fullName}!`,
       });
       
       // Route based on role
@@ -166,9 +204,20 @@ export default function Login() {
         setLocation("/");
       }
     } catch (error: any) {
+      console.error("Registration error:", error);
+      let errorMessage = "Please try again.";
+      
+      if (error.code === 'auth/email-already-in-use') {
+        errorMessage = "An account with this email already exists.";
+      } else if (error.code === 'auth/invalid-email') {
+        errorMessage = "Invalid email format.";
+      } else if (error.code === 'auth/weak-password') {
+        errorMessage = "Password is too weak.";
+      }
+      
       toast({
         title: "Registration failed",
-        description: error.message || "Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -186,15 +235,30 @@ export default function Login() {
       >
         <Card className="backdrop-blur-sm bg-white/95 shadow-xl border-0">
           <CardHeader className="text-center space-y-4">
-            <div className="mx-auto w-20 h-20 bg-gradient-to-br from-maroon-500 to-maroon-700 rounded-full flex items-center justify-center mb-4">
-              <div className="text-white text-2xl font-bold">UB</div>
-            </div>
-            <CardTitle className="text-2xl font-bold text-maroon-800">
-              UB FoodHub
-            </CardTitle>
-            <p className="text-maroon-600 text-sm">
-              Your campus dining companion
-            </p>
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.2, duration: 0.3 }}
+              className="mx-auto w-20 h-20 mb-4"
+            >
+              <img 
+                src="/logo.png" 
+                alt="UB FoodHub Logo" 
+                className="w-full h-full object-contain"
+              />
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4, duration: 0.3 }}
+            >
+              <CardTitle className="text-2xl font-bold text-maroon-800">
+                UB FoodHub
+              </CardTitle>
+              <p className="text-maroon-600 text-sm mt-2">
+                Your campus dining companion
+              </p>
+            </motion.div>
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="login" className="w-full">
@@ -205,7 +269,12 @@ export default function Login() {
               
               <TabsContent value="login" className="space-y-4">
                 <form onSubmit={handleLogin} className="space-y-4">
-                  <div className="space-y-2">
+                  <motion.div
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.1 }}
+                    className="space-y-2"
+                  >
                     <Label htmlFor="email">Email</Label>
                     <div className="relative">
                       <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
@@ -217,45 +286,87 @@ export default function Login() {
                         value={loginData.email}
                         onChange={(e) => setLoginData(prev => ({ ...prev, email: e.target.value }))}
                         required
+                        disabled={isLoading}
                       />
                     </div>
-                  </div>
+                  </motion.div>
                   
-                  <div className="space-y-2">
+                  <motion.div
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.2 }}
+                    className="space-y-2"
+                  >
                     <Label htmlFor="password">Password</Label>
                     <div className="relative">
                       <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                       <Input
                         id="password"
-                        type="password"
+                        type={showPassword ? "text" : "password"}
                         placeholder="Enter your password"
-                        className="pl-10"
+                        className="pl-10 pr-10"
                         value={loginData.password}
                         onChange={(e) => setLoginData(prev => ({ ...prev, password: e.target.value }))}
                         required
+                        disabled={isLoading}
                       />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                        disabled={isLoading}
+                      >
+                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
                     </div>
-                  </div>
+                  </motion.div>
                   
-                  <Button 
-                    type="submit" 
-                    className="w-full bg-maroon-600 hover:bg-maroon-700"
-                    disabled={isLoading}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 }}
                   >
-                    {isLoading ? "Signing in..." : "Sign In"}
-                  </Button>
+                    <Button 
+                      type="submit" 
+                      className="w-full bg-maroon-600 hover:bg-maroon-700 transition-colors"
+                      disabled={isLoading}
+                    >
+                      <AnimatePresence mode="wait">
+                        {isLoading ? (
+                          <motion.div
+                            key="loading"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="flex items-center space-x-2"
+                          >
+                            <Spinner size="sm" />
+                            <span>Signing in...</span>
+                          </motion.div>
+                        ) : (
+                          <motion.span
+                            key="sign-in"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                          >
+                            Sign In
+                          </motion.span>
+                        )}
+                      </AnimatePresence>
+                    </Button>
+                  </motion.div>
                 </form>
-                
-                <div className="text-center text-sm text-gray-500 mt-4">
-                  <p>Demo accounts:</p>
-                  <p>Admin: admin@foodhub.com / admin123</p>
-                  <p>Stall Owner: canteen@foodhub.com / canteen123</p>
-                </div>
               </TabsContent>
               
               <TabsContent value="register" className="space-y-4">
                 <form onSubmit={handleRegister} className="space-y-4">
-                  <div className="space-y-2">
+                  <motion.div
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.1 }}
+                    className="space-y-2"
+                  >
                     <Label htmlFor="fullName">Full Name</Label>
                     <div className="relative">
                       <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
@@ -266,11 +377,17 @@ export default function Login() {
                         value={registerData.fullName}
                         onChange={(e) => setRegisterData(prev => ({ ...prev, fullName: e.target.value }))}
                         required
+                        disabled={isLoading}
                       />
                     </div>
-                  </div>
+                  </motion.div>
                   
-                  <div className="space-y-2">
+                  <motion.div
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.2 }}
+                    className="space-y-2"
+                  >
                     <Label htmlFor="registerEmail">Email</Label>
                     <div className="relative">
                       <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
@@ -282,27 +399,47 @@ export default function Login() {
                         value={registerData.email}
                         onChange={(e) => setRegisterData(prev => ({ ...prev, email: e.target.value }))}
                         required
+                        disabled={isLoading}
                       />
                     </div>
-                  </div>
+                  </motion.div>
                   
-                  <div className="space-y-2">
+                  <motion.div
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.3 }}
+                    className="space-y-2"
+                  >
                     <Label htmlFor="registerPassword">Password</Label>
                     <div className="relative">
                       <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                       <Input
                         id="registerPassword"
-                        type="password"
-                        placeholder="Create a password"
-                        className="pl-10"
+                        type={showRegisterPassword ? "text" : "password"}
+                        placeholder="Create a password (min. 6 characters)"
+                        className="pl-10 pr-10"
                         value={registerData.password}
                         onChange={(e) => setRegisterData(prev => ({ ...prev, password: e.target.value }))}
                         required
+                        disabled={isLoading}
                       />
+                      <button
+                        type="button"
+                        onClick={() => setShowRegisterPassword(!showRegisterPassword)}
+                        className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                        disabled={isLoading}
+                      >
+                        {showRegisterPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
                     </div>
-                  </div>
+                  </motion.div>
                   
-                  <div className="space-y-2">
+                  <motion.div
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.4 }}
+                    className="space-y-2"
+                  >
                     <Label htmlFor="studentId">Student ID (Optional)</Label>
                     <div className="relative">
                       <GraduationCap className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
@@ -312,15 +449,22 @@ export default function Login() {
                         className="pl-10"
                         value={registerData.studentId}
                         onChange={(e) => setRegisterData(prev => ({ ...prev, studentId: e.target.value }))}
+                        disabled={isLoading}
                       />
                     </div>
-                  </div>
+                  </motion.div>
                   
-                  <div className="space-y-2">
+                  <motion.div
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.5 }}
+                    className="space-y-2"
+                  >
                     <Label htmlFor="role">Role</Label>
                     <Select 
                       value={registerData.role} 
                       onValueChange={(value) => setRegisterData(prev => ({ ...prev, role: value }))}
+                      disabled={isLoading}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Select your role" />
@@ -331,15 +475,43 @@ export default function Login() {
                         <SelectItem value="admin">Admin</SelectItem>
                       </SelectContent>
                     </Select>
-                  </div>
+                  </motion.div>
                   
-                  <Button 
-                    type="submit" 
-                    className="w-full bg-maroon-600 hover:bg-maroon-700"
-                    disabled={isLoading}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.6 }}
                   >
-                    {isLoading ? "Creating account..." : "Create Account"}
-                  </Button>
+                    <Button 
+                      type="submit" 
+                      className="w-full bg-maroon-600 hover:bg-maroon-700 transition-colors"
+                      disabled={isLoading}
+                    >
+                      <AnimatePresence mode="wait">
+                        {isLoading ? (
+                          <motion.div
+                            key="loading"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="flex items-center space-x-2"
+                          >
+                            <Spinner size="sm" />
+                            <span>Creating account...</span>
+                          </motion.div>
+                        ) : (
+                          <motion.span
+                            key="create"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                          >
+                            Create Account
+                          </motion.span>
+                        )}
+                      </AnimatePresence>
+                    </Button>
+                  </motion.div>
                 </form>
               </TabsContent>
             </Tabs>
