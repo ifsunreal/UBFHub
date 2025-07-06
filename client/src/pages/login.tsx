@@ -6,14 +6,16 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useLocation } from "wouter";
-import { useAuth } from "@/lib/auth";
+import { useStore } from "@/lib/store";
 import { useToast } from "@/hooks/use-toast";
 import { User, Mail, Lock, GraduationCap } from "lucide-react";
+import { signIn, signUp, createDocument, getDocument, onAuthStateChange } from "@/lib/firebase";
+import { createInitialAccounts } from "@/lib/create-admin-accounts";
 import { motion } from "framer-motion";
 
 export default function Login() {
   const [, setLocation] = useLocation();
-  const { login, register, user } = useAuth();
+  const { dispatch } = useStore();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -25,43 +27,103 @@ export default function Login() {
 
   // Register state
   const [registerData, setRegisterData] = useState({
-    username: "",
     email: "",
     password: "",
     fullName: "",
     studentId: "",
-    role: "student" as const,
+    role: "student",
   });
 
-  // Redirect if user is already logged in
+  // Check for existing user authentication and create initial accounts
   useEffect(() => {
-    if (user) {
-      // Route based on user role
-      const role = user.role;
-      if (role === 'admin') {
-        setLocation("/admin");
-      } else if (role === 'stall_owner') {
-        setLocation("/stall-dashboard");
-      } else {
-        setLocation("/");
+    // Create initial accounts on first load
+    createInitialAccounts();
+
+    const unsubscribe = onAuthStateChange(async (firebaseUser) => {
+      if (firebaseUser) {
+        try {
+          const userDoc = await getDocument("users", firebaseUser.uid);
+          if (userDoc.exists()) {
+            const userData = { id: firebaseUser.uid, ...userDoc.data() };
+            dispatch({ type: "SET_USER", payload: userData });
+            
+            // Route based on user role
+            const role = userData.role;
+            if (role === 'admin') {
+              setLocation("/admin");
+            } else if (role === 'stall_owner') {
+              setLocation("/stall-dashboard");
+            } else {
+              setLocation("/");
+            }
+          }
+        } catch (error) {
+          console.error("Error fetching user data:", error);
+        }
       }
-    }
-  }, [user, setLocation]);
+    });
+
+    return () => unsubscribe();
+  }, [dispatch, setLocation]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     
     try {
-      await login(loginData.email, loginData.password);
-      toast({
-        title: "Welcome back!",
-        description: "You have successfully logged in.",
-      });
-    } catch (error) {
+      // Handle specific admin accounts
+      if (loginData.email === "admin@foodhub.com" && loginData.password === "admin123") {
+        const userData = {
+          id: "admin-account-001",
+          email: "admin@foodhub.com",
+          fullName: "System Administrator",
+          role: "admin",
+          loyaltyPoints: 0,
+        };
+        dispatch({ type: "SET_USER", payload: userData });
+        setLocation("/admin");
+        toast({
+          title: "Welcome, Admin!",
+          description: "You have successfully logged in as administrator.",
+        });
+        return;
+      }
+
+      if (loginData.email === "canteen@foodhub.com" && loginData.password === "canteen123") {
+        const userData = {
+          id: "stall-owner-001",
+          email: "canteen@foodhub.com",
+          fullName: "Food Stall Owner",
+          role: "stall_owner",
+          loyaltyPoints: 0,
+        };
+        dispatch({ type: "SET_USER", payload: userData });
+        setLocation("/stall-dashboard");
+        toast({
+          title: "Welcome, Stall Owner!",
+          description: "You have successfully logged in to your dashboard.",
+        });
+        return;
+      }
+
+      // Regular Firebase authentication
+      const userCredential = await signIn(loginData.email, loginData.password);
+      const firebaseUser = userCredential.user;
+      
+      const userDoc = await getDocument("users", firebaseUser.uid);
+      if (userDoc.exists()) {
+        const userData = { id: firebaseUser.uid, ...userDoc.data() };
+        dispatch({ type: "SET_USER", payload: userData });
+        
+        toast({
+          title: "Welcome back!",
+          description: "You have successfully logged in.",
+        });
+      }
+    } catch (error: any) {
       toast({
         title: "Login failed",
-        description: error instanceof Error ? error.message : "Please check your credentials.",
+        description: error.message || "Please check your credentials.",
         variant: "destructive",
       });
     } finally {
@@ -74,15 +136,39 @@ export default function Login() {
     setIsLoading(true);
     
     try {
-      await register(registerData);
+      const userCredential = await signUp(registerData.email, registerData.password);
+      const firebaseUser = userCredential.user;
+      
+      // Create user document in Firestore
+      const userData = {
+        email: registerData.email,
+        fullName: registerData.fullName,
+        studentId: registerData.studentId || null,
+        role: registerData.role,
+        loyaltyPoints: 0,
+      };
+      
+      await createDocument("users", firebaseUser.uid, userData);
+      
+      dispatch({ type: "SET_USER", payload: { id: firebaseUser.uid, ...userData } });
+      
       toast({
         title: "Account created!",
         description: "Your account has been created successfully.",
       });
-    } catch (error) {
+      
+      // Route based on role
+      if (registerData.role === 'admin') {
+        setLocation("/admin");
+      } else if (registerData.role === 'stall_owner') {
+        setLocation("/stall-dashboard");
+      } else {
+        setLocation("/");
+      }
+    } catch (error: any) {
       toast({
         title: "Registration failed",
-        description: error instanceof Error ? error.message : "Please try again.",
+        description: error.message || "Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -163,7 +249,7 @@ export default function Login() {
                 <div className="text-center text-sm text-gray-500 mt-4">
                   <p>Demo accounts:</p>
                   <p>Admin: admin@foodhub.com / admin123</p>
-                  <p>Student: student@ub.edu.ph / student123</p>
+                  <p>Stall Owner: canteen@foodhub.com / canteen123</p>
                 </div>
               </TabsContent>
               
@@ -179,21 +265,6 @@ export default function Login() {
                         className="pl-10"
                         value={registerData.fullName}
                         onChange={(e) => setRegisterData(prev => ({ ...prev, fullName: e.target.value }))}
-                        required
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="username">Username</Label>
-                    <div className="relative">
-                      <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                      <Input
-                        id="username"
-                        placeholder="Choose a username"
-                        className="pl-10"
-                        value={registerData.username}
-                        onChange={(e) => setRegisterData(prev => ({ ...prev, username: e.target.value }))}
                         required
                       />
                     </div>
@@ -249,7 +320,7 @@ export default function Login() {
                     <Label htmlFor="role">Role</Label>
                     <Select 
                       value={registerData.role} 
-                      onValueChange={(value) => setRegisterData(prev => ({ ...prev, role: value as "student" | "stall_owner" | "admin" }))}
+                      onValueChange={(value) => setRegisterData(prev => ({ ...prev, role: value }))}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Select your role" />
