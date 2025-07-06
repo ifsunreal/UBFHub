@@ -61,6 +61,18 @@ export default {
           border: "var(--sidebar-border)",
           ring: "var(--sidebar-ring)",
         },
+        maroon: {
+          50: "hsl(var(--maroon-50))",
+          100: "hsl(var(--maroon-100))",
+          200: "hsl(var(--maroon-200))",
+          300: "hsl(var(--maroon-300))",
+          400: "hsl(var(--maroon-400))",
+          500: "hsl(var(--maroon-500))",
+          600: "hsl(var(--maroon-600))",
+          700: "hsl(var(--maroon-700))",
+          800: "hsl(var(--maroon-800))",
+          900: "hsl(var(--maroon-900))",
+        },
       },
       keyframes: {
         "accordion-down": {

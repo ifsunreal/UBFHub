@@ -1,22 +1,40 @@
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
 import { Search, ArrowLeft, Filter, Clock, Star } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Spinner } from "@/components/ui/spinner";
 import { useLocation } from "wouter";
+import { subscribeToCollection } from "@/lib/firebase";
 import BottomNav from "@/components/layout/bottom-nav";
 import RestaurantCard from "@/components/restaurant-card";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function SearchPage() {
   const [, setLocation] = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [restaurants, setRestaurants] = useState<any[]>([]);
+  const [recentSearches, setRecentSearches] = useState<string[]>([]);
 
-  const { data: restaurants } = useQuery({
-    queryKey: ["/api/restaurants"],
-  });
+  // Load restaurants from Firestore
+  useEffect(() => {
+    const unsubscribe = subscribeToCollection("stalls", (stallsData) => {
+      const activeStalls = stallsData.filter(stall => stall.isActive);
+      setRestaurants(activeStalls);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  // Load recent searches from localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem("recentSearches");
+    if (saved) {
+      setRecentSearches(JSON.parse(saved));
+    }
+  }, []);
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
@@ -28,182 +46,214 @@ export default function SearchPage() {
 
     setIsSearching(true);
     
-    // Simulate search delay
+    // Simulate search delay for better UX
     setTimeout(() => {
-      const results = restaurants?.filter((restaurant: any) =>
+      const results = restaurants.filter((restaurant: any) =>
         restaurant.name.toLowerCase().includes(query.toLowerCase()) ||
         restaurant.category.toLowerCase().includes(query.toLowerCase()) ||
         restaurant.description?.toLowerCase().includes(query.toLowerCase())
-      ) || [];
+      );
       
       setSearchResults(results);
       setIsSearching(false);
+
+      // Save to recent searches
+      const updatedSearches = [query, ...recentSearches.filter(s => s !== query)].slice(0, 5);
+      setRecentSearches(updatedSearches);
+      localStorage.setItem("recentSearches", JSON.stringify(updatedSearches));
     }, 300);
   };
 
-  const recentSearches = [
-    "Chicken Rice",
-    "BBQ",
-    "Halo-halo",
-    "Adobo",
-    "Beverages"
-  ];
+  const handleRecentSearch = (query: string) => {
+    handleSearch(query);
+  };
 
-  const popularCategories = [
-    { name: "Fried Chicken", icon: "🍗" },
-    { name: "Rice Meals", icon: "🍚" },
-    { name: "BBQ & Grilled", icon: "🔥" },
-    { name: "Desserts", icon: "🍨" },
-    { name: "Beverages", icon: "🥤" },
-    { name: "Snacks", icon: "🍿" }
-  ];
+  const clearRecentSearches = () => {
+    setRecentSearches([]);
+    localStorage.removeItem("recentSearches");
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b p-4">
-        <div className="flex items-center space-x-4">
-          <button
+      <div className="bg-white sticky top-0 z-10 border-b border-gray-200">
+        <div className="flex items-center gap-4 p-4">
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => setLocation("/")}
-            className="p-2 hover:bg-gray-100 rounded-full"
+            className="p-2"
           >
-            <ArrowLeft className="h-5 w-5" />
-          </button>
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+          
           <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+            <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
             <Input
-              type="text"
-              placeholder="Search restaurants, food..."
+              placeholder="Search restaurants, food, or category..."
               value={searchQuery}
               onChange={(e) => handleSearch(e.target.value)}
-              className="pl-10 bg-gray-50 border-0 focus:ring-2 focus:ring-maroon-500"
+              className="pl-10 pr-10"
               autoFocus
             />
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            className="shrink-0"
-          >
-            <Filter className="h-4 w-4" />
-          </Button>
-        </div>
-      </header>
-
-      <div className="p-4 pb-20">
-        {/* Search Results */}
-        {searchQuery ? (
-          <div>
-            <h2 className="font-semibold text-gray-800 mb-4">
-              {isSearching ? "Searching..." : `Results for "${searchQuery}"`}
-            </h2>
-            
-            {isSearching ? (
-              <div className="space-y-4">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="bg-white rounded-xl p-4 animate-pulse">
-                    <div className="h-40 bg-gray-200 rounded-lg mb-3"></div>
-                    <div className="h-4 bg-gray-200 rounded mb-2"></div>
-                    <div className="h-3 bg-gray-200 rounded w-2/3"></div>
-                  </div>
-                ))}
-              </div>
-            ) : searchResults.length > 0 ? (
-              <div className="space-y-4">
-                {searchResults.map((restaurant: any) => (
-                  <RestaurantCard key={restaurant.id} restaurant={restaurant} />
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-20">
-                <div className="text-6xl mb-4">🔍</div>
-                <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                  No results found
-                </h3>
-                <p className="text-gray-600">
-                  Try searching for something else or browse our categories
-                </p>
-              </div>
+            {searchQuery && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setSearchQuery("");
+                  setSearchResults([]);
+                }}
+                className="absolute right-1 top-1 p-2 h-8 w-8"
+              >
+                ×
+              </Button>
             )}
           </div>
-        ) : (
-          <div className="space-y-6">
-            {/* Recent Searches */}
-            <div>
-              <h2 className="font-semibold text-gray-800 mb-4">Recent Searches</h2>
-              <div className="space-y-2">
-                {recentSearches.map((search, index) => (
-                  <Card
-                    key={index}
-                    className="cursor-pointer hover:shadow-md transition-shadow"
-                    onClick={() => handleSearch(search)}
-                  >
-                    <CardContent className="pt-6">
-                      <div className="flex items-center space-x-3">
-                        <Clock className="h-5 w-5 text-gray-400" />
-                        <span className="text-gray-800">{search}</span>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </div>
+          
+          <Button variant="outline" size="sm">
+            <Filter className="w-4 h-4" />
+          </Button>
+        </div>
+      </div>
 
-            {/* Popular Categories */}
-            <div>
-              <h2 className="font-semibold text-gray-800 mb-4">Popular Categories</h2>
-              <div className="grid grid-cols-2 gap-3">
-                {popularCategories.map((category, index) => (
-                  <Card
-                    key={index}
-                    className="cursor-pointer hover:shadow-md transition-shadow"
-                    onClick={() => handleSearch(category.name)}
-                  >
-                    <CardContent className="pt-6">
-                      <div className="text-center">
-                        <div className="text-3xl mb-2">{category.icon}</div>
-                        <p className="font-medium text-gray-800">{category.name}</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </div>
+      <div className="p-4 pb-20">
+        <AnimatePresence mode="wait">
+          {!searchQuery ? (
+            <motion.div
+              key="no-search"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="space-y-6"
+            >
+              {/* Recent Searches */}
+              {recentSearches.length > 0 && (
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold text-gray-900">Recent Searches</h3>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={clearRecentSearches}
+                      className="text-maroon-600 hover:text-maroon-700"
+                    >
+                      Clear all
+                    </Button>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {recentSearches.map((search, index) => (
+                      <motion.button
+                        key={search}
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: index * 0.1 }}
+                        onClick={() => handleRecentSearch(search)}
+                        className="bg-gray-100 hover:bg-gray-200 px-3 py-2 rounded-full text-sm text-gray-700 transition-colors"
+                      >
+                        <Clock className="w-3 h-3 inline-block mr-1" />
+                        {search}
+                      </motion.button>
+                    ))}
+                  </div>
+                </div>
+              )}
 
-            {/* Trending Now */}
-            <div>
-              <h2 className="font-semibold text-gray-800 mb-4">Trending Now</h2>
-              <div className="space-y-3">
-                {restaurants?.slice(0, 3).map((restaurant: any) => (
-                  <Card
-                    key={restaurant.id}
-                    className="cursor-pointer hover:shadow-md transition-shadow"
-                    onClick={() => setLocation(`/restaurant/${restaurant.id}`)}
-                  >
-                    <CardContent className="pt-6">
-                      <div className="flex items-center space-x-4">
-                        <img
-                          src={restaurant.image}
-                          alt={restaurant.name}
-                          className="w-16 h-16 rounded-lg object-cover"
-                        />
-                        <div className="flex-1">
-                          <h3 className="font-medium text-gray-800">{restaurant.name}</h3>
-                          <div className="flex items-center space-x-2 mt-1">
-                            <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
-                            <span className="text-sm text-gray-600">{restaurant.rating}</span>
-                            <span className="text-sm text-gray-500">•</span>
-                            <span className="text-sm text-gray-600">{restaurant.category}</span>
-                          </div>
-                        </div>
+              {/* Popular Categories */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Popular Categories</h3>
+                <div className="grid grid-cols-2 gap-3">
+                  {["Filipino", "Asian", "Beverages", "Snacks", "Rice Meals", "Desserts"].map((category, index) => (
+                    <motion.button
+                      key={category}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                      onClick={() => handleSearch(category)}
+                      className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 hover:border-maroon-300 hover:shadow-md transition-all text-left"
+                    >
+                      <div className="text-sm font-medium text-gray-900">{category}</div>
+                      <div className="text-xs text-gray-500 mt-1">
+                        {restaurants.filter(r => r.category === category).length} restaurants
                       </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                    </motion.button>
+                  ))}
+                </div>
               </div>
-            </div>
-          </div>
-        )}
+
+              {/* All Restaurants */}
+              {restaurants.length > 0 && (
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">All Restaurants</h3>
+                  <div className="space-y-4">
+                    {restaurants.map((restaurant, index) => (
+                      <motion.div
+                        key={restaurant.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                      >
+                        <RestaurantCard restaurant={restaurant} />
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          ) : (
+            <motion.div
+              key="search-results"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="space-y-4"
+            >
+              {isSearching ? (
+                <div className="flex flex-col items-center justify-center py-12">
+                  <Spinner showLogo size="lg" />
+                  <p className="text-gray-500 mt-4">Searching for "{searchQuery}"...</p>
+                </div>
+              ) : (
+                <>
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      Search Results ({searchResults.length})
+                    </h3>
+                  </div>
+
+                  {searchResults.length > 0 ? (
+                    <div className="space-y-4">
+                      {searchResults.map((restaurant, index) => (
+                        <motion.div
+                          key={restaurant.id}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: index * 0.1 }}
+                        >
+                          <RestaurantCard restaurant={restaurant} />
+                        </motion.div>
+                      ))}
+                    </div>
+                  ) : (
+                    <motion.div 
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="text-center py-12"
+                    >
+                      <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <Search className="w-8 h-8 text-gray-400" />
+                      </div>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">No results found</h3>
+                      <p className="text-gray-500 text-sm">
+                        Try searching for something else or check your spelling
+                      </p>
+                    </motion.div>
+                  )}
+                </>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       <BottomNav />

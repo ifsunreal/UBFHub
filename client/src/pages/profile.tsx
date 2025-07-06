@@ -4,15 +4,35 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useLocation } from "wouter";
 import { useStore } from "@/lib/store";
+import { useToast } from "@/hooks/use-toast";
+import { logOut } from "@/lib/firebase";
 import BottomNav from "@/components/layout/bottom-nav";
 
 export default function Profile() {
   const [, setLocation] = useLocation();
   const { state, dispatch } = useStore();
+  const { toast } = useToast();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
-  const handleLogout = () => {
-    dispatch({ type: "SET_USER", payload: null });
-    setLocation("/");
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    try {
+      await logOut();
+      dispatch({ type: "SET_USER", payload: null });
+      toast({
+        title: "Logged out successfully",
+        description: "You have been logged out of your account.",
+      });
+      setLocation("/login");
+    } catch (error) {
+      toast({
+        title: "Logout failed",
+        description: "There was an error logging you out. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoggingOut(false);
+    }
   };
 
   const menuItems = [
@@ -176,9 +196,19 @@ export default function Profile() {
           onClick={handleLogout}
           variant="outline"
           className="w-full text-red-600 border-red-200 hover:bg-red-50"
+          disabled={isLoggingOut}
         >
-          <LogOut className="h-4 w-4 mr-2" />
-          Log out
+          {isLoggingOut ? (
+            <>
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-600 mr-2"></div>
+              Logging out...
+            </>
+          ) : (
+            <>
+              <LogOut className="h-4 w-4 mr-2" />
+              Log out
+            </>
+          )}
         </Button>
 
         {/* Version */}

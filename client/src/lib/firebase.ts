@@ -56,7 +56,15 @@ export const signIn = (email: string, password: string) =>
 export const signUp = (email: string, password: string) =>
   createUserWithEmailAndPassword(auth, email, password);
 
-export const logOut = () => signOut(auth);
+export const logOut = async () => {
+  try {
+    await signOut(auth);
+    return true;
+  } catch (error) {
+    console.error("Logout error:", error);
+    throw error;
+  }
+};
 
 export const onAuthStateChange = (
   callback: (user: FirebaseUser | null) => void,
