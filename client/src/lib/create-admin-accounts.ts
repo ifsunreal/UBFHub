@@ -21,12 +21,12 @@ export const createInitialAccounts = async () => {
       studentId: null,
     });
 
-    // Create a sample stall for the stall owner
+    // Create a sample stall using the actual user ID as the document ID
     await createDocument('stalls', 'stall-owner-001', {
       name: 'Sulit Chicken - Batangas',
       description: 'Authentic Korean-style fried chicken with Filipino twist',
       category: 'Filipino',
-      image: null,
+      image: 'https://images.unsplash.com/photo-1562967914-608f82629710?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=300',
       rating: 5.0,
       reviewCount: 2000,
       deliveryTime: '15-40 min',
