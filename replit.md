@@ -178,7 +178,7 @@ UB FoodHub is a comprehensive mobile web application designed for the University
 
 ### Enhanced Authentication & Security Implementation (July 06, 2025)
 - **Google Authentication**: Fully implemented Google sign-in with Firebase popup authentication
-- **Email Domain Restriction**: Only @foodhub.com and @ub.edu.ph email addresses are allowed for registration
+- **Email Domain Restriction**: Only @ub.edu.ph email addresses are allowed for both registration and Google authentication
 - **Email Verification**: Automatic email verification sent upon registration, users must verify before account activation
 - **Required Fields Enhancement**: Student ID and phone number are now mandatory for all registrations
 - **Philippine Phone Validation**: Added proper phone number validation for Philippine mobile numbers (+639xxx or 09xxx format)
@@ -186,6 +186,7 @@ UB FoodHub is a comprehensive mobile web application designed for the University
 - **Role Management**: Removed role selection from registration - all new users default to student role, admin assigns roles manually
 - **Enhanced Form Validation**: Comprehensive client-side validation with user-friendly error messages
 - **Security Improvements**: Email domain validation prevents unauthorized registrations, proper error handling for authentication flows
+- **Firebase Security**: Moved Firebase configuration to environment variables for enhanced security
 
 ## Changelog
 

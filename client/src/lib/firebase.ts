@@ -76,10 +76,19 @@ export const logOut = async () => {
   }
 };
 
-// Google Sign-In functions
+// Google Sign-In functions with email domain validation
 export const signInWithGoogle = async () => {
   try {
     const result = await signInWithPopup(auth, googleProvider);
+    const email = result.user.email || "";
+    
+    // Validate email domain - only @ub.edu.ph allowed
+    if (!email.endsWith("@ub.edu.ph")) {
+      // Sign out the user immediately
+      await signOut(auth);
+      throw new Error("Only @ub.edu.ph email addresses are allowed to sign in with Google.");
+    }
+    
     return result;
   } catch (error: any) {
     console.error("Google sign-in error:", error);
@@ -94,6 +103,19 @@ export const signInWithGoogleRedirect = () => {
 export const handleGoogleRedirectResult = async () => {
   try {
     const result = await getRedirectResult(auth);
+    
+    // If there's a result, validate email domain
+    if (result && result.user) {
+      const email = result.user.email || "";
+      
+      // Validate email domain - only @ub.edu.ph allowed
+      if (!email.endsWith("@ub.edu.ph")) {
+        // Sign out the user immediately
+        await signOut(auth);
+        throw new Error("Only @ub.edu.ph email addresses are allowed to sign in with Google.");
+      }
+    }
+    
     return result;
   } catch (error: any) {
     console.error("Google redirect result error:", error);

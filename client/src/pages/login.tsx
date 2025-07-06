@@ -401,16 +401,8 @@ export default function Login() {
           setLocation("/");
         }
       } else {
-        // New user - validate email domain first
+        // New user - create account with default student role
         const email = firebaseUser.email || "";
-        const allowedDomains = ['@ub.edu.ph'];
-        const emailDomain = email.substring(email.lastIndexOf('@'));
-        
-        if (!allowedDomains.includes(emailDomain)) {
-          // Sign out the user and show error
-          await firebaseUser.delete();
-          throw new Error("Only @ub.edu.ph email addresses are allowed.");
-        }
         
         // Create account with default student role - they need to complete profile
         const userData = {
@@ -445,6 +437,8 @@ export default function Login() {
         errorMessage = "Popup was blocked. Please allow popups and try again.";
       } else if (error.code === 'auth/cancelled-popup-request') {
         errorMessage = "Only one sign-in request at a time.";
+      } else if (error.message && error.message.includes("@ub.edu.ph")) {
+        errorMessage = error.message;
       }
       
       toast({
