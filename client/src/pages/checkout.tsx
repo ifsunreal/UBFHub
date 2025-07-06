@@ -22,21 +22,56 @@ export default function Checkout() {
   const [specialInstructions, setSpecialInstructions] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [stallInfo, setStallInfo] = useState<any>(null);
+  const [groupOrderEmails, setGroupOrderEmails] = useState<string[]>([]);
+  const [scheduledTime, setScheduledTime] = useState("");
+  const [deliveryInstructions, setDeliveryInstructions] = useState("");
+  const [noCutlery, setNoCutlery] = useState(false);
+  const [stallsInfo, setStallsInfo] = useState<any[]>([]);
 
   useEffect(() => {
     if (state.user?.id) {
       const unsubscribe = subscribeToQuery("cartItems", "userId", "==", state.user.id, async (items) => {
         setCartItems(items);
         
-        // Get stall info for the first item
-        if (items.length > 0 && items[0].stallId) {
-          const stallDoc = await getDocument("stalls", items[0].stallId);
+        // Get all unique stall info for multi-stall support
+        const uniqueStallIds = [...new Set(items.map(item => item.stallId))].filter(Boolean);
+        const stallsData = [];
+        
+        for (const stallId of uniqueStallIds) {
+          const stallDoc = await getDocument("stalls", stallId);
           if (stallDoc.exists()) {
-            setStallInfo({ id: stallDoc.id, ...stallDoc.data() });
+            stallsData.push({ id: stallDoc.id, ...stallDoc.data() });
           }
+        }
+        
+        setStallsInfo(stallsData);
+        
+        // Keep legacy single stall support
+        if (stallsData.length > 0) {
+          setStallInfo(stallsData[0]);
         }
       });
       return () => unsubscribe();
+    }
+    
+    // Load stored order data from cart
+    const storedGroupEmails = localStorage.getItem('groupOrderEmails');
+    const storedScheduledTime = localStorage.getItem('scheduledTime');
+    const storedInstructions = localStorage.getItem('deliveryInstructions');
+    const storedCutlery = localStorage.getItem('noCutlery');
+    
+    if (storedGroupEmails) {
+      setGroupOrderEmails(JSON.parse(storedGroupEmails));
+    }
+    if (storedScheduledTime) {
+      setScheduledTime(storedScheduledTime);
+    }
+    if (storedInstructions) {
+      setDeliveryInstructions(storedInstructions);
+      setSpecialInstructions(storedInstructions);
+    }
+    if (storedCutlery) {
+      setNoCutlery(JSON.parse(storedCutlery));
     }
   }, [state.user?.id]);
 
@@ -62,39 +97,89 @@ export default function Checkout() {
       // Create order
       const orderId = `UBF-${new Date().getFullYear()}-${Date.now().toString().slice(-6)}`;
       
-      await addDocument("orders", {
-        userId: state.user?.id,
-        customerName: state.user?.fullName || "Student",
-        customerEmail: state.user?.email || "Not provided",
-        studentId: state.user?.studentId || "Not provided",
-        stallId: cartItems[0]?.stallId,
-        stallName: stallInfo?.name || "Unknown Stall",
-        status: "pending",
-        totalAmount: subtotal,
-        paymentMethod,
-        cashAmount: paymentMethod === "cash" ? parseFloat(cashAmount) : null,
-        changeRequired: paymentMethod === "cash" ? parseFloat(cashAmount) - subtotal : 0,
-        specialInstructions: specialInstructions || null,
-        qrCode: orderId,
-        estimatedTime: "15-40 mins",
-        items: cartItems.map(item => ({
-          menuItemId: item.menuItemId,
-          name: item.name,
-          quantity: item.quantity,
-          price: item.price,
-          customizations: item.customizations || [],
-        })),
-        createdAt: new Date(),
+      // Group items by stall for multi-stall support
+      const itemsByStall = cartItems.reduce((acc, item) => {
+        const stallId = item.stallId || 'unknown';
+        if (!acc[stallId]) {
+          acc[stallId] = [];
+        }
+        acc[stallId].push(item);
+        return acc;
+      }, {} as { [key: string]: any[] });
+
+      // Create separate orders for each stall if multi-stall
+      const orderPromises = Object.entries(itemsByStall).map(async ([stallId, stallItems], index) => {
+        const stallOrderId = Object.keys(itemsByStall).length > 1 ? `${orderId}-${index + 1}` : orderId;
+        const stallSubtotal = stallItems.reduce((sum, item) => {
+          const itemPrice = item.price || 0;
+          const customizationPrice = item.customizations?.reduce((sum: number, custom: any) => sum + (custom.price || 0), 0) || 0;
+          return sum + ((itemPrice + customizationPrice) * item.quantity);
+        }, 0);
+
+        const stallData = stallsInfo.find(s => s.id === stallId);
+
+        return addDocument("orders", {
+          userId: state.user?.id,
+          customerName: state.user?.fullName || "Student",
+          customerEmail: state.user?.email || "Not provided",
+          studentId: state.user?.studentId || "Not provided",
+          stallId,
+          stallName: stallData?.name || "Unknown Stall",
+          status: "pending",
+          totalAmount: stallSubtotal,
+          paymentMethod,
+          cashAmount: paymentMethod === "cash" ? parseFloat(cashAmount) : null,
+          changeRequired: paymentMethod === "cash" ? parseFloat(cashAmount) - stallSubtotal : 0,
+          specialInstructions: specialInstructions || deliveryInstructions || null,
+          qrCode: stallOrderId,
+          estimatedTime: scheduledTime || "15-40 mins",
+          scheduledTime: scheduledTime || null,
+          groupOrderEmails: groupOrderEmails.length > 0 ? groupOrderEmails : null,
+          noCutlery: noCutlery,
+          isMultiStallOrder: Object.keys(itemsByStall).length > 1,
+          mainOrderId: orderId,
+          items: stallItems.map(item => ({
+            menuItemId: item.menuItemId,
+            name: item.name,
+            quantity: item.quantity,
+            price: item.price,
+            customizations: item.customizations || [],
+          })),
+          createdAt: new Date(),
+        });
       });
+
+      await Promise.all(orderPromises);
 
       // Clear cart
       for (const item of cartItems) {
         await deleteDocument("cartItems", item.id);
       }
 
+      // Clear localStorage data
+      localStorage.removeItem('groupOrderEmails');
+      localStorage.removeItem('scheduledTime');
+      localStorage.removeItem('deliveryInstructions');
+      localStorage.removeItem('noCutlery');
+
+      const stallCount = Object.keys(itemsByStall).length;
+      const hasGroupOrder = groupOrderEmails.length > 0;
+      const hasScheduledTime = !!scheduledTime;
+
+      let description = `Your order ${orderId} has been confirmed.`;
+      if (stallCount > 1) {
+        description = `Your ${stallCount} orders have been confirmed (${orderId})`;
+      }
+      if (hasGroupOrder) {
+        description += ` Group order includes ${groupOrderEmails.length} member${groupOrderEmails.length > 1 ? 's' : ''}.`;
+      }
+      if (hasScheduledTime) {
+        description += ` Ready by ${scheduledTime}.`;
+      }
+
       toast({
         title: "Order placed successfully!",
-        description: `Your order ${orderId} has been confirmed.`,
+        description,
       });
 
       setLocation("/orders");
@@ -180,23 +265,91 @@ export default function Checkout() {
           </div>
         </motion.div>
 
-        {/* Pickup Info */}
+        {/* Multi-Stall Pickup Info */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
           className="bg-white rounded-lg p-4"
         >
-          <h3 className="font-semibold text-gray-900 mb-2">Pickup from</h3>
-          <p className="font-medium">{stallInfo?.name || "Loading..."}</p>
-          <p className="text-sm text-gray-600">Ready in 15-40 mins</p>
+          <h3 className="font-semibold text-gray-900 mb-2">
+            {stallsInfo.length > 1 ? "Pickup from Multiple Stalls" : "Pickup from"}
+          </h3>
+          {stallsInfo.length > 1 ? (
+            <div className="space-y-2">
+              {stallsInfo.map((stall, index) => (
+                <div key={stall.id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                  <div>
+                    <p className="font-medium">{stall.name}</p>
+                    <p className="text-sm text-gray-600">Stall {index + 1}</p>
+                  </div>
+                  <span className="text-sm text-[#6d031e] font-medium">
+                    {scheduledTime ? `Ready by ${scheduledTime}` : "15-40 mins"}
+                  </span>
+                </div>
+              ))}
+              <div className="mt-2 p-2 bg-blue-50 rounded-lg">
+                <p className="text-sm text-blue-700">
+                  💡 Multi-stall ordering: You can pick up from different stalls in one order!
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div>
+              <p className="font-medium">{stallsInfo[0]?.name || "Loading..."}</p>
+              <p className="text-sm text-gray-600">
+                {scheduledTime ? `Ready by ${scheduledTime}` : "Ready in 15-40 mins"}
+              </p>
+            </div>
+          )}
         </motion.div>
+
+        {/* Group Order Info */}
+        {groupOrderEmails.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+            className="bg-white rounded-lg p-4"
+          >
+            <h3 className="font-semibold text-gray-900 mb-2">Group Order</h3>
+            <div className="space-y-1">
+              <p className="text-sm text-gray-600 mb-2">
+                This order includes {groupOrderEmails.length} additional member{groupOrderEmails.length > 1 ? 's' : ''}:
+              </p>
+              {groupOrderEmails.map((email, index) => (
+                <div key={index} className="text-sm bg-gray-50 p-2 rounded">
+                  {email}
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {/* Scheduled Time */}
+        {scheduledTime && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="bg-white rounded-lg p-4"
+          >
+            <h3 className="font-semibold text-gray-900 mb-2">Scheduled Pickup</h3>
+            <div className="flex items-center gap-2">
+              <span className="text-2xl">⏰</span>
+              <div>
+                <p className="font-medium">Order will be ready by {scheduledTime}</p>
+                <p className="text-sm text-gray-600">Order Later feature active</p>
+              </div>
+            </div>
+          </motion.div>
+        )}
 
         {/* Payment Method */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
+          transition={{ delay: 0.3 }}
           className="bg-white rounded-lg p-4"
         >
           <h3 className="font-semibold text-gray-900 mb-3">Payment Method</h3>
@@ -253,11 +406,21 @@ export default function Checkout() {
                 min={subtotal}
                 step="0.01"
               />
-              {cashAmount && parseFloat(cashAmount) >= subtotal && (
-                <div className="mt-2 p-2 bg-green-50 rounded-lg">
-                  <p className="text-sm text-green-700">
-                    Change: ₱{(parseFloat(cashAmount) - subtotal).toFixed(2)}
-                  </p>
+              {cashAmount && (
+                <div className="mt-2">
+                  {parseFloat(cashAmount) >= subtotal ? (
+                    <div className="p-2 bg-green-50 rounded-lg">
+                      <p className="text-sm text-green-700">
+                        Change: ₱{(parseFloat(cashAmount) - subtotal).toFixed(2)}
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="p-2 bg-red-50 rounded-lg">
+                      <p className="text-sm text-red-700">
+                        Amount is not enough. Need at least ₱{subtotal.toFixed(2)}
+                      </p>
+                    </div>
+                  )}
                 </div>
               )}
             </motion.div>
