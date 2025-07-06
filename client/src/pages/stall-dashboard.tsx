@@ -28,13 +28,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useStore } from "@/lib/store";
 import { useToast } from "@/hooks/use-toast";
-import { 
-  subscribeToQuery, 
-  addDocument, 
-  updateDocument, 
-  deleteDocument, 
-  getDocument 
-} from "@/lib/firebase";
+// Firebase imports removed - using backend API instead
 
 export default function StallDashboard() {
   const { state } = useStore();

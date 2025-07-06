@@ -4,6 +4,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { StoreProvider } from "./lib/store.tsx";
+import { AuthProvider } from "./lib/auth";
 import AuthGuard from "@/components/auth-guard";
 import NotFound from "@/pages/not-found";
 import Login from "@/pages/login";
@@ -68,14 +69,16 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <StoreProvider>
-        <TooltipProvider>
-          <div className="max-w-md mx-auto bg-white shadow-xl min-h-screen relative">
-            <Toaster />
-            <Router />
-          </div>
-        </TooltipProvider>
-      </StoreProvider>
+      <AuthProvider>
+        <StoreProvider>
+          <TooltipProvider>
+            <div className="max-w-md mx-auto bg-white shadow-xl min-h-screen relative">
+              <Toaster />
+              <Router />
+            </div>
+          </TooltipProvider>
+        </StoreProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }

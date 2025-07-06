@@ -7,7 +7,7 @@ import RestaurantCard from "@/components/restaurant-card";
 import BottomNav from "@/components/layout/bottom-nav";
 import FloatingCart from "@/components/floating-cart";
 import { Search, MapPin, Clock, Star, Award, Bell } from "lucide-react";
-import { subscribeToCollection } from "@/lib/firebase";
+// Firebase import removed - using backend API instead
 import { useStore } from "@/lib/store";
 
 export default function Home() {
