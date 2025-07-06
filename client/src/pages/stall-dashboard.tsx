@@ -46,6 +46,7 @@ export default function StallDashboard() {
   const [menuItems, setMenuItems] = useState<any[]>([]);
   const [orders, setOrders] = useState<any[]>([]);
   const [stallInfo, setStallInfo] = useState<any>(null);
+  const [stallId, setStallId] = useState<string | null>(null);
   const [isMenuDialogOpen, setIsMenuDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
   const [activeTab, setActiveTab] = useState("overview");
@@ -62,20 +63,39 @@ export default function StallDashboard() {
 
   useEffect(() => {
     if (state.user?.id) {
-      // Get stall information
+      // First, check if this user has a stall with their Auth UID as document ID
       getDocument("stalls", state.user.id).then((doc) => {
         if (doc.exists()) {
-          setStallInfo({ id: doc.id, ...doc.data() });
+          const stall = { id: doc.id, ...doc.data() };
+          setStallInfo(stall);
+          setStallId(doc.id);
+        } else {
+          // If not found, search for stall where ownerId matches the user's Auth UID
+          subscribeToQuery("stalls", "ownerId", "==", state.user.id, (stalls) => {
+            if (stalls.length > 0) {
+              const stall = stalls[0];
+              setStallInfo(stall);
+              setStallId(stall.id);
+            }
+          });
         }
       });
+    }
+  }, [state.user?.id]);
 
+  // Subscribe to menu items and orders when stallId is available
+  useEffect(() => {
+    if (stallId) {
       // Subscribe to menu items for this stall
       const unsubscribeMenuItems = subscribeToQuery(
         "menuItems", 
         "stallId", 
         "==", 
-        state.user.id, 
-        setMenuItems
+        stallId, 
+        (items) => {
+          console.log("Stall dashboard menu items:", items);
+          setMenuItems(items);
+        }
       );
 
       // Subscribe to orders for this stall
@@ -83,7 +103,7 @@ export default function StallDashboard() {
         "orders", 
         "stallId", 
         "==", 
-        state.user.id, 
+        stallId, 
         setOrders
       );
 
@@ -92,10 +112,10 @@ export default function StallDashboard() {
         unsubscribeOrders();
       };
     }
-  }, [state.user?.id]);
+  }, [stallId]);
 
   const handleSaveMenuItem = async () => {
-    if (!itemForm.name || !itemForm.price) {
+    if (!itemForm.name || !itemForm.price || !stallId) {
       toast({
         title: "Error",
         description: "Please fill in all required fields",
@@ -108,9 +128,12 @@ export default function StallDashboard() {
       const menuItemData = {
         ...itemForm,
         price: parseFloat(itemForm.price),
-        stallId: state.user?.id,
-        customizations: itemForm.customizations.filter(c => c.name.trim() !== "")
+        stallId: stallId,
+        customizations: itemForm.customizations.filter(c => c.name.trim() !== ""),
+        createdAt: new Date()
       };
+      
+      console.log("Saving menu item with stallId:", stallId);
 
       if (editingItem) {
         await updateDocument("menuItems", editingItem.id, menuItemData);

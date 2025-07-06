@@ -27,7 +27,7 @@ interface MenuItemType {
   image?: string;
   isAvailable: boolean;
   isPopular: boolean;
-  customizations?: string[];
+  customizations?: Array<{ name: string; price: number }>;
 }
 
 export default function Restaurant() {
@@ -57,7 +57,9 @@ export default function Restaurant() {
       });
 
       // Subscribe to menu items
+      console.log("Looking for menu items with stallId:", restaurantId);
       const unsubscribe = subscribeToQuery("menuItems", "stallId", "==", restaurantId, (items) => {
+        console.log("Menu items loaded for restaurant:", restaurantId, items);
         setMenuItems(items.filter(item => item.isAvailable));
       });
 
@@ -79,17 +81,16 @@ export default function Restaurant() {
     if (!selectedItem || !state.user) return;
 
     try {
-      const customizationText = Object.entries(customizations)
+      const selectedCustomizations = Object.entries(customizations)
         .filter(([_, selected]) => selected)
-        .map(([key, _]) => key)
-        .join(", ");
+        .map(([key, _]) => key);
 
       await addDocument("cartItems", {
         userId: state.user.id,
         menuItemId: selectedItem.id,
         stallId: restaurantId,
         quantity,
-        customizations: customizationText || null,
+        customizations: selectedCustomizations.length > 0 ? selectedCustomizations : null,
         specialInstructions: specialInstructions || null,
       });
 
@@ -407,41 +408,28 @@ export default function Restaurant() {
                   </RadioGroup>
                 </div>
 
-                <div>
-                  <Label className="text-base font-medium">Choice of Drink</Label>
-                  <p className="text-sm text-gray-600 mb-3">Optional - Select up to 1</p>
-                  <div className="space-y-2">
-                    {['Iced Coffee', 'Fresh Juice', 'Soft Drink'].map((drink) => (
-                      <div key={drink} className="flex items-center space-x-2 p-3 border rounded-lg">
-                        <Checkbox 
-                          checked={customizations[drink] || false}
-                          onCheckedChange={(checked) => setCustomizations({...customizations, [drink]: checked})}
-                        />
-                        <Label className="flex-1">
-                          {drink}
-                          <span className="text-sm text-gray-600 block">+₱45.00</span>
-                        </Label>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <Label className="text-base font-medium">Other customers also ordered these</Label>
-                  <div className="grid grid-cols-1 gap-2 mt-3">
-                    {['Kimchi Rice 🥢', 'Rice', 'Fried Egg 🍳', 'Iced Latte', 'Turon'].map((item, idx) => (
-                      <div key={item} className="flex items-center justify-between p-3 border rounded-lg">
-                        <div className="flex items-center gap-3">
-                          <Checkbox />
-                          <div>
-                            <span className="text-sm font-medium">{item}</span>
-                            <span className="text-sm text-gray-600 block">+₱{[39, 49, 20, 95, 69][idx]}.00</span>
-                          </div>
+                {selectedItem.customizations && selectedItem.customizations.length > 0 && (
+                  <div>
+                    <Label className="text-base font-medium">Customization Options</Label>
+                    <p className="text-sm text-gray-600 mb-3">Optional add-ons</p>
+                    <div className="space-y-2">
+                      {selectedItem.customizations.map((custom, index) => (
+                        <div key={index} className="flex items-center space-x-2 p-3 border rounded-lg">
+                          <Checkbox 
+                            checked={customizations[custom.name] || false}
+                            onCheckedChange={(checked) => setCustomizations({...customizations, [custom.name]: checked})}
+                          />
+                          <Label className="flex-1">
+                            {custom.name}
+                            <span className="text-sm text-gray-600 block">
+                              {custom.price > 0 ? `+₱${custom.price.toFixed(2)}` : 'Free'}
+                            </span>
+                          </Label>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
 
                 <div>
                   <Label className="text-base font-medium">Special instructions</Label>
