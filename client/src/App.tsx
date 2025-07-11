@@ -7,6 +7,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { StoreProvider } from "./lib/store.tsx";
 import AuthGuard from "@/components/auth-guard";
 import SplashScreen from "@/components/splash-screen";
+import DesktopNav from "@/components/layout/desktop-nav";
 import NotFound from "@/pages/not-found";
 import Login from "@/pages/login";
 import Home from "@/pages/home";
@@ -28,36 +29,43 @@ function Router() {
       <Route path="/login" component={Login} />
       <Route path="/">
         <AuthGuard>
+          <DesktopNav />
           <Home />
         </AuthGuard>
       </Route>
       <Route path="/restaurant/:id">
         <AuthGuard>
+          <DesktopNav />
           <Restaurant />
         </AuthGuard>
       </Route>
       <Route path="/cart">
         <AuthGuard>
+          <DesktopNav />
           <Cart />
         </AuthGuard>
       </Route>
       <Route path="/checkout">
         <AuthGuard>
+          <DesktopNav />
           <Checkout />
         </AuthGuard>
       </Route>
       <Route path="/orders">
         <AuthGuard>
+          <DesktopNav />
           <Orders />
         </AuthGuard>
       </Route>
       <Route path="/profile">
         <AuthGuard>
+          <DesktopNav />
           <Profile />
         </AuthGuard>
       </Route>
       <Route path="/search">
         <AuthGuard>
+          <DesktopNav />
           <Search />
         </AuthGuard>
       </Route>
@@ -73,16 +81,19 @@ function Router() {
       </Route>
       <Route path="/settings">
         <AuthGuard>
+          <DesktopNav />
           <Settings />
         </AuthGuard>
       </Route>
       <Route path="/help-center">
         <AuthGuard>
+          <DesktopNav />
           <HelpCenter />
         </AuthGuard>
       </Route>
       <Route path="/terms-policies">
         <AuthGuard>
+          <DesktopNav />
           <TermsPolicies />
         </AuthGuard>
       </Route>
@@ -102,7 +113,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <StoreProvider>
         <TooltipProvider>
-          <div className="max-w-md mx-auto bg-white shadow-xl min-h-screen relative">
+          <div className="w-full bg-white min-h-screen relative md:max-w-none max-w-md mx-auto md:shadow-none shadow-xl">
             <Toaster />
             <Router />
           </div>
